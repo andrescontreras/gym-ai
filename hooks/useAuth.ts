@@ -1,9 +1,11 @@
 'use client';
 
+import { useAuthContext } from '@/contexts/AuthContext';
+
 /**
- * Authentication hook.
- * Thin stub — implement during feature development.
+ * Hook for accessing authentication state and methods.
+ * Must be used within AuthProvider.
  */
 export function useAuth() {
-  throw new Error('Not implemented');
+  return useAuthContext();
 }
