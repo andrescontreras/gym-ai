@@ -46,6 +46,8 @@ gym-ai/
 
 ## Getting Started
 
+> **✅ Foundation Complete!** Authentication, database, and core infrastructure are ready.
+
 ### 1. Install Dependencies
 
 ```bash
@@ -54,19 +56,41 @@ npm install
 
 ### 2. Set Up Environment Variables
 
-Copy `.env.local.example` to `.env.local` and fill in your credentials:
+Copy `.env.local.example` to `.env.local` and fill in your Supabase credentials:
 
 ```bash
 cp .env.local.example .env.local
 ```
 
-You'll need:
-- **Supabase**: Create a project at [supabase.com](https://supabase.com)
-- **Anthropic API Key**: Get one at [console.anthropic.com](https://console.anthropic.com)
+Required variables:
+- `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anon/public key
+- `SUPABASE_SERVICE_ROLE_KEY` - Your Supabase service role key
+- `ANTHROPIC_API_KEY` - Your Anthropic API key (for AI features)
 
-### 3. Set Up Database (Supabase)
+**Corporate Network Users**: If you encounter SSL certificate errors, add:
+```bash
+NODE_TLS_REJECT_UNAUTHORIZED=0  # Development only!
+```
 
-Run the following SQL in your Supabase SQL Editor:
+### 3. Apply Database Migrations
+
+The database schema and seed data are already prepared in `supabase/migrations/`. Apply them using Supabase SQL Editor:
+
+**Option A: Using Supabase Dashboard**
+1. Go to your Supabase project → SQL Editor
+2. Run `supabase/migrations/20260708000000_initial_schema.sql` (creates tables)
+3. Run `supabase/migrations/20260822000000_enable_rls.sql` (enables security)
+4. Run `supabase/migrations/20260823000000_seed_exercises.sql` (seeds 50+ exercises)
+
+**Option B: Using Supabase CLI**
+```bash
+supabase login
+supabase link --project-ref YOUR_PROJECT_REF
+supabase db push
+```
+
+**What Gets Created:**
 
 ```sql
 -- Enable pgvector extension for semantic search
@@ -132,7 +156,23 @@ CREATE INDEX idx_workout_sessions_user_id ON workout_sessions(user_id);
 npm run dev
 ```
 
+**Corporate Network Users**: If you get SSL certificate errors, run:
+```bash
+NODE_TLS_REJECT_UNAUTHORIZED=0 npm run dev
+```
+
 Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+**Test the Setup:**
+1. Visit `/dashboard` - should redirect to `/` (not logged in)
+2. Create a test user in Supabase dashboard or via API
+3. Log in and access `/dashboard` - should show your profile
+
+**Successful setup shows:**
+- ✅ Dashboard displays "Welcome, [Your Name]!"
+- ✅ Experience level shown
+- ✅ Sign out button works
+- ✅ No console errors
 
 ## 🚀 Core Features
 
@@ -227,17 +267,21 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 🗺️ Development Roadmap
 
-### Phase 1: MVP Foundation (Current)
+### Phase 1: MVP Foundation ✅ COMPLETE
 - [x] Project setup & database schema
 - [x] Type definitions for all core features
 - [x] AI service structure (routine builder, substitution, voice parsing)
-- [ ] Supabase auth flow
-- [ ] Onboarding UI (multi-step form)
-- [ ] Routine Builder API endpoint
-- [ ] Active Session UI
-- [ ] Exercise Detail component
-- [ ] AI Substitution API endpoint
-- [ ] Exercise database seeding (100+ exercises)
+- [x] **Supabase auth flow** (signup, login, logout, session management)
+- [x] **Authentication context & hooks** (useAuth, useProfile)
+- [x] **Middleware for route protection**
+- [x] **Row Level Security (RLS) policies**
+- [x] **Exercise database seeding** (50+ exercises across 8 movement patterns)
+- [x] **Shared utilities** (formatters, volume calculations, load translation)
+- [x] **Working dashboard with profile display**
+- [ ] Onboarding UI (multi-step form) - **READY FOR TEAM**
+- [ ] Routine Builder API endpoint - **READY FOR TEAM**
+- [ ] Active Session UI - **READY FOR TEAM**
+- [ ] AI Substitution API endpoint - **READY FOR TEAM**
 
 ### Phase 2: Core Features
 - [ ] Voice input integration (Web Speech API / Whisper)

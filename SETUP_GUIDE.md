@@ -1,14 +1,16 @@
 # Gym AI - Setup Guide
 
+> **Status**: Foundation infrastructure is complete and working! ✅
+
 This guide walks you through setting up the Gym AI project from scratch.
 
 ## Prerequisites
 
 - Node.js 18+ installed
 - A Supabase account ([supabase.com](https://supabase.com))
-- An Anthropic API key ([console.anthropic.com](https://console.anthropic.com))
+- An Anthropic API key ([console.anthropic.com](https://console.anthropic.com)) - *Optional for testing, required for AI features*
 
-## Step-by-Step Setup
+## Quick Start (5 Minutes)
 
 ### 1. Clone & Install
 
@@ -20,111 +22,231 @@ npm install
 ### 2. Create Supabase Project
 
 1. Go to [supabase.com](https://supabase.com) and create a new project
-2. Wait for the project to initialize (~2 minutes)
-3. Navigate to **Project Settings** → **API**
-4. Copy the following:
-   - **Project URL** (starts with `https://xxx.supabase.co`)
-   - **anon/public key** (starts with `eyJ...`)
-   - **service_role key** (starts with `eyJ...`, keep this secret!)
+2. Choose a **Database Password** (save this!)
+3. Select your preferred **Region**
+4. Wait for initialization (~2 minutes)
 
-### 3. Get Anthropic API Key
+### 3. Get Your Supabase Credentials
 
-1. Go to [console.anthropic.com](https://console.anthropic.com)
-2. Create an account or sign in
-3. Navigate to **API Keys**
-4. Create a new API key
-5. Copy the key (starts with `sk-ant-...`)
+Navigate to **Project Settings** → **API**:
+
+Copy these values:
+- **Project URL** - e.g., `https://azjccxgcuvkakedklscq.supabase.co`
+- **anon/public key** (may show as "publishable key") - starts with `sb_publishable_` or `eyJ...`
+- **service_role key** (secret!) - starts with `sb_secret_` or `eyJ...`
 
 ### 4. Configure Environment Variables
 
-Copy the example file:
+Create `.env.local`:
 
 ```bash
 cp .env.local.example .env.local
 ```
 
-Edit `.env.local` and replace the placeholder values:
+Edit `.env.local` with your actual Supabase credentials:
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-ANTHROPIC_API_KEY=sk-ant-api03-...
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_your-key-here
+SUPABASE_SERVICE_ROLE_KEY=sb_secret_your-secret-key-here
+
+# Anthropic API (optional for testing)
+ANTHROPIC_API_KEY=sk-ant-your-key-here
+
+# App URL
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
-### 5. Set Up Database Schema
+**Corporate Network Users**: Add this line for SSL issues:
+```env
+NODE_TLS_REJECT_UNAUTHORIZED=0  # Development only!
+```
+### 5. Apply Database Migrations
 
-Go to your Supabase project:
+**Three migrations need to be applied in order:**
 
-1. Open the **SQL Editor** (left sidebar)
-2. Click **New Query**
-3. Copy and paste the SQL from the README.md (Section 3)
-4. Click **Run** (or press F5)
+#### Migration 1: Initial Schema
+Go to Supabase SQL Editor and run: `supabase/migrations/20260708000000_initial_schema.sql`
 
 This creates:
-- `exercises` table (with pgvector for semantic search)
+- `exercises` table with pgvector support
 - `user_profiles` table
+- `workout_plans` table
 - `workout_sessions` table
 - `session_exercises` table
-- All necessary indexes
+- `set_logs` table
+- All indexes
 
-### 6. (Optional) Seed Exercise Database
+#### Migration 2: Enable Row Level Security
+Run: `supabase/migrations/20260822000000_enable_rls.sql`
 
-You can add sample exercises to test the app:
+This enables:
+- RLS on all tables
+- Policies ensuring users only access their own data
+- Read-only access to exercises for authenticated users
 
+#### Migration 3: Seed Exercise Data
+Run: `supabase/migrations/20260823000000_seed_exercises.sql`
+
+This seeds:
+- **50+ exercises** across 8 movement patterns
+- Push Horizontal (8 exercises)
+- Push Vertical (6 exercises)
+- Pull Horizontal (6 exercises)
+- Pull Vertical (5 exercises)
+- Squat (6 exercises)
+- Hinge (7 exercises)
+- Lunge (5 exercises)
+- Carry (3 exercises)
+- Isolation movements (7 exercises)
+
+**Verify migrations worked:**
 ```sql
-INSERT INTO exercises (name, muscle_group, movement_pattern, equipment, description) VALUES
-('Barbell Bench Press', 'Chest', 'push_horizontal', ARRAY['barbell', 'bench'], 'Classic horizontal pressing movement for chest development'),
-('Dumbbell Bench Press', 'Chest', 'push_horizontal', ARRAY['dumbbells', 'bench'], 'Unilateral pressing with greater range of motion'),
-('Push-ups', 'Chest', 'push_horizontal', ARRAY['bodyweight'], 'Bodyweight horizontal press, scalable for all levels'),
-('Barbell Back Squat', 'Legs', 'squat', ARRAY['barbell', 'squat rack'], 'Fundamental lower body compound movement'),
-('Goblet Squat', 'Legs', 'squat', ARRAY['dumbbell', 'kettlebell'], 'Beginner-friendly squat variation with anterior load'),
-('Deadlift', 'Posterior Chain', 'hinge', ARRAY['barbell'], 'Hip hinge pattern for posterior chain development'),
-('Romanian Deadlift', 'Posterior Chain', 'hinge', ARRAY['barbell', 'dumbbells'], 'Hip hinge with emphasis on hamstrings'),
-('Pull-ups', 'Back', 'pull_vertical', ARRAY['pull-up bar'], 'Vertical pulling for back and biceps'),
-('Lat Pulldown', 'Back', 'pull_vertical', ARRAY['cable machine'], 'Machine-based vertical pull'),
-('Barbell Row', 'Back', 'pull_horizontal', ARRAY['barbell'], 'Horizontal pulling for back thickness');
+-- Should return 50+
+SELECT COUNT(*) FROM exercises;
+
+-- Should show RLS enabled
+SELECT tablename, rowsecurity 
+FROM pg_tables 
+WHERE schemaname = 'public';
 ```
+### 6. Run the Development Server
 
-### 7. Run the Development Server
-
+**Standard:**
 ```bash
 npm run dev
 ```
 
+**Corporate Network (SSL issues):**
+```bash
+NODE_TLS_REJECT_UNAUTHORIZED=0 npm run dev
+```
+
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Verify Setup
+---
 
-You should see:
-- ✅ No console errors related to environment variables
-- ✅ Supabase client connecting successfully
-- ✅ The Next.js default page (we'll build the UI next)
+## ✅ Verify Setup
+
+### Test 1: Check Redirect (Middleware Working)
+Visit: http://localhost:3000/dashboard
+
+**Expected:** Redirects to `/` (home page) because you're not logged in
+**What this confirms:** 
+- ✅ Middleware is protecting routes
+- ✅ Auth system is working
+- ✅ No console errors
+
+### Test 2: Create a Test User
+**Option A: Via Supabase Dashboard**
+1. Go to your Supabase project → Auth → Users
+2. Click "Add user" → "Create new user"
+3. Email: `test@test.com`, Password: `testpassword123`
+4. ✅ Check "Auto Confirm User"
+5. Click "Create user"
+
+**Option B: Via API** (Console in browser)
+```javascript
+fetch('/api/auth/signup', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    email: 'myemail@gmail.com',
+    password: 'mypassword123',
+    name: 'My Name'
+  })
+}).then(r => r.json()).then(console.log)
+```
+
+### Test 3: Log In and Access Dashboard
+```javascript
+fetch('/api/auth/login', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    email: 'test@test.com',
+    password: 'testpassword123'
+  })
+}).then(r => r.json()).then(console.log)
+```
+
+**Expected:** `{ success: true }`
+
+**If user was created via Supabase dashboard**, add profile manually:
+```sql
+INSERT INTO user_profiles (id, email, name, experience_level)
+VALUES (
+  'USER_ID_FROM_AUTH_USERS',
+  'test@test.com',
+  'Test User',
+  'beginner'
+);
+```
+
+### Test 4: View Dashboard
+Visit: http://localhost:3000/dashboard
+
+**Expected result:**
+- ✅ Shows "Welcome, [Your Name]!"
+- ✅ Displays experience level
+- ✅ Sign out button works
+- ✅ No console errors
+
+---
 
 ## Troubleshooting
 
-### "Invalid API key" error
-- Double-check your `.env.local` file
-- Make sure there are no extra spaces or quotes
-- Restart the dev server after changing env vars
+### SSL Certificate Error (`unable to get local issuer certificate`)
+**Cause:** Corporate network with self-signed certificates
 
-### Database connection errors
-- Verify your Supabase project is active
-- Check that the anon key matches your project
-- Ensure the database schema was created successfully
+**Fix:** Add to `.env.local`:
+```env
+NODE_TLS_REJECT_UNAUTHORIZED=0
+```
+Or run with: `NODE_TLS_REJECT_UNAUTHORIZED=0 npm run dev`
 
-### TypeScript errors
-- Run `npm install` again
-- Delete `node_modules` and `.next` folders, then reinstall
+⚠️ **Development only! Never use in production!**
 
-## Next Steps
+### "Email rate limit exceeded"
+**Cause:** Too many signup attempts in quick succession
 
-Now that setup is complete, you can:
+**Fix:** 
+- Wait 5-10 minutes
+- Use a different email address
+- Or create user via Supabase dashboard
 
-1. **Build the Active Session UI** (`app/session/page.tsx`)
-2. **Create Exercise components** (`components/exercise/`)
-3. **Implement the AI substitution endpoint** (`app/api/ai/substitute/route.ts`)
-4. **Add authentication** (Supabase Auth)
+### "Profile not found" after login
+**Cause:** User created via dashboard didn't create profile row
 
-Refer to the main `README.md` for the development roadmap.
+**Fix:** Run SQL to create profile (see Test 3 above)
+
+### "Export createClient doesn't exist"
+**Cause:** Hot reload didn't pick up changes
+
+**Fix:** Restart dev server completely
+
+---
+
+## ✅ Setup Complete!
+
+**What's Working:**
+- ✅ Authentication (signup, login, logout)
+- ✅ Protected routes with middleware
+- ✅ Database connection with RLS
+- ✅ 50+ exercises seeded
+- ✅ User profiles
+- ✅ Working dashboard
+
+**Your team can now start building features!** 🚀
+
+## Next Steps for Feature Teams
+
+Refer to the **Foundation Complete Summary** in the main README.md:
+
+**Feature A:** Personalized Routines (onboarding + AI routine builder)
+**Feature B:** Exercise Substitutions (real-time AI suggestions)
+**Feature C:** Volume Optimization (analytics dashboard)
+**Feature D:** Workout Logging (session tracking + voice input)
+
+Each feature has its own routes, tables, and components - **no conflicts!**
