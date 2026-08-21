@@ -67,10 +67,10 @@ INSERT INTO exercises (name, muscle_group, movement_pattern, equipment, synergis
 ('Overhead Carry', 'core', 'carry', ARRAY['dumbbell'], ARRAY['shoulders', 'obliques'], 'linear', 'Overhead stabilization carry'),
 
 -- Isolation Movements (commonly needed)
-('Bicep Curl', 'arms', 'pull_horizontal', ARRAY['dumbbells'], ARRAY[], 'linear', 'Bicep isolation'),
-('Tricep Pushdown', 'arms', 'push_horizontal', ARRAY['cable'], ARRAY[], 'linear', 'Tricep isolation'),
-('Lateral Raise', 'shoulders', 'push_vertical', ARRAY['dumbbells'], ARRAY[], 'ascending', 'Medial deltoid isolation'),
+('Bicep Curl', 'arms', 'pull_horizontal', ARRAY['dumbbells'], ARRAY[]::text[], 'linear', 'Bicep isolation'),
+('Tricep Pushdown', 'arms', 'push_horizontal', ARRAY['cable'], ARRAY[]::text[], 'linear', 'Tricep isolation'),
+('Lateral Raise', 'shoulders', 'push_vertical', ARRAY['dumbbells'], ARRAY[]::text[], 'ascending', 'Medial deltoid isolation'),
 ('Face Pull', 'shoulders', 'pull_horizontal', ARRAY['cable'], ARRAY['rear_deltoid'], 'linear', 'Rear deltoid and rotator cuff'),
-('Leg Curl', 'legs', 'hinge', ARRAY['machine'], ARRAY[], 'linear', 'Hamstring isolation'),
-('Leg Extension', 'legs', 'squat', ARRAY['machine'], ARRAY[], 'linear', 'Quad isolation'),
-('Calf Raise', 'legs', 'squat', ARRAY['machine'], ARRAY[], 'linear', 'Calf isolation');
+('Leg Curl', 'legs', 'hinge', ARRAY['machine'], ARRAY[]::text[], 'linear', 'Hamstring isolation'),
+('Leg Extension', 'legs', 'squat', ARRAY['machine'], ARRAY[]::text[], 'linear', 'Quad isolation'),
+('Calf Raise', 'legs', 'squat', ARRAY['machine'], ARRAY[]::text[], 'linear', 'Calf isolation');
