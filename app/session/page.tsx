@@ -1,7 +1,34 @@
+'use client';
+
+import { useState } from 'react';
+import { Clock3, Dumbbell, Flame, MoreHorizontal, Play, Sparkles } from 'lucide-react';
+import { ExerciseSubstitution } from '@/components/session/exercise-substitution';
+import type { Exercise, SessionExercise, SubstitutionSuggestion } from '@/types';
+
+const benchPress: Exercise = { id: 'bench-barbell', name: 'Press de banca con barra', muscleGroup: 'Pecho', synergistMuscles: ['Tríceps', 'Deltoide anterior'], movementPattern: 'push_horizontal', equipment: ['barbell', 'bench'], resistanceProfile: 'ascending' };
+const startingExercises: SessionExercise[] = [
+  { id: 'session-bench', exerciseId: benchPress.id, exercise: benchPress, sets: 4, reps: 8, weight: 80, rir: 2, restSeconds: 120, completed: false },
+  { id: 'session-row', exerciseId: 'row-cable', exercise: { id: 'row-cable', name: 'Remo sentado en polea', muscleGroup: 'Espalda', movementPattern: 'pull_horizontal', equipment: ['cables'], resistanceProfile: 'constant' }, sets: 3, reps: 10, weight: 55, rir: 2, restSeconds: 90, completed: false },
+  { id: 'session-fly', exerciseId: 'fly-cable', exercise: { id: 'fly-cable', name: 'Cruce de poleas', muscleGroup: 'Pecho', movementPattern: 'push_horizontal', equipment: ['cables'], resistanceProfile: 'accommodating' }, sets: 3, reps: 12, weight: 18, rir: 2, restSeconds: 75, completed: false },
+];
+
 export default function SessionPage() {
-  return (
-    <main className="p-8">
-      <h1 className="text-2xl font-semibold">Active Session</h1>
-    </main>
-  );
+  const [exercises, setExercises] = useState(startingExercises);
+  const [activeId, setActiveId] = useState(startingExercises[0].id);
+  const [showSubstitution, setShowSubstitution] = useState(false);
+  const activeExercise = exercises.find((item) => item.id === activeId) ?? exercises[0];
+  const completed = exercises.filter((item) => item.completed).length;
+
+  function confirmSubstitution(suggestion: SubstitutionSuggestion) {
+    setExercises((current) => current.map((item) => item.id === activeExercise.id ? { ...item, exerciseId: suggestion.exercise.id, exercise: suggestion.exercise, weight: suggestion.adjustedWeight, reps: suggestion.adjustedReps, substitutedFrom: item.substitutedFrom ?? item.exerciseId } : item));
+    setShowSubstitution(false);
+  }
+
+  return <main className="min-h-screen bg-[#111411] text-[#e8eee5]">
+    <header className="border-b border-[#273126] bg-[#171a17]"><div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5 sm:px-8"><div><p className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-[#8dff70]">Gym AI / Sesión activa</p><h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">Upper body · Semana 3</h1></div><button type="button" aria-label="Más opciones" className="rounded-full p-2 text-[#aab8a7] hover:bg-[#273126]"><MoreHorizontal /></button></div></header>
+    <div className="mx-auto max-w-6xl px-5 py-6 sm:px-8 sm:py-10"><div className="mb-8 grid gap-3 sm:grid-cols-3"><div className="rounded-xl border border-[#273126] bg-[#171a17] p-4"><p className="text-xs text-[#aab8a7]">Progreso</p><p className="mt-1 text-2xl font-bold">{completed}/{exercises.length}</p><div className="mt-3 h-1.5 rounded-full bg-[#2b3529]"><div className="h-full rounded-full bg-[#8dff70]" style={{ width: `${completed / exercises.length * 100}%` }} /></div></div><div className="rounded-xl border border-[#273126] bg-[#171a17] p-4"><p className="text-xs text-[#aab8a7]">Tiempo estimado</p><p className="mt-1 flex items-center gap-2 text-2xl font-bold"><Clock3 size={20} className="text-[#8dff70]" /> 48 min</p></div><div className="rounded-xl border border-[#273126] bg-[#171a17] p-4"><p className="text-xs text-[#aab8a7]">Objetivo de hoy</p><p className="mt-1 flex items-center gap-2 text-2xl font-bold"><Flame size={20} className="text-[#ffcc66]" /> Hipertrofia</p></div></div>
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]"><section><div className="mb-3 flex items-center justify-between"><h2 className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-[#aab8a7]">Ejercicios de hoy</h2><span className="text-xs text-[#758174]">3 movimientos</span></div><div className="space-y-2">{exercises.map((item, index) => <button type="button" key={item.id} onClick={() => setActiveId(item.id)} className={`flex w-full items-center gap-4 rounded-xl border p-4 text-left transition-colors ${activeId === item.id ? 'border-[#8dff70] bg-[#1d2b1c]' : 'border-[#273126] bg-[#171a17] hover:border-[#52654e]'}`}><span className="font-mono text-xs text-[#758174]">0{index + 1}</span><span className="min-w-0 flex-1"><strong className="block truncate">{item.exercise.name}</strong><span className="text-xs text-[#aab8a7]">{item.sets} series · {item.reps} reps · {item.weight ? `${item.weight} kg` : 'Peso corporal'}</span></span>{item.substitutedFrom && <Sparkles size={16} className="text-[#8dff70]" />}</button>)}</div></section>
+        <section className="rounded-2xl border border-[#273126] bg-[#171a17] p-5 sm:p-8"><div className="mb-8 flex items-start justify-between gap-4"><div><span className="inline-flex items-center gap-2 rounded-full bg-[#283b27] px-3 py-1 text-xs font-semibold text-[#baffac]"><Dumbbell size={14} /> En curso</span><h2 className="mt-4 text-3xl font-bold tracking-tight">{activeExercise.exercise.name}</h2><p className="mt-2 text-[#aab8a7]">{activeExercise.exercise.muscleGroup} · {activeExercise.exercise.movementPattern.replace('_', ' ')}</p></div><span className="font-mono text-xs text-[#758174]">RIR {activeExercise.rir}</span></div><div className="grid grid-cols-3 gap-3 border-y border-[#273126] py-5"><div><p className="text-xs text-[#aab8a7]">Series</p><p className="mt-1 text-2xl font-bold">{activeExercise.sets}</p></div><div><p className="text-xs text-[#aab8a7]">Repeticiones</p><p className="mt-1 text-2xl font-bold">{activeExercise.reps}</p></div><div><p className="text-xs text-[#aab8a7]">Carga</p><p className="mt-1 text-2xl font-bold">{activeExercise.weight ? `${activeExercise.weight} kg` : 'BW'}</p></div></div><div className="mt-8 flex flex-col gap-3 sm:flex-row"><button type="button" onClick={() => setShowSubstitution(true)} className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-lg border border-[#8dff70] px-4 font-bold text-[#baffac] hover:bg-[#283b27]"><Sparkles size={18} /> Sustituir con IA</button><button type="button" onClick={() => setExercises((current) => current.map((item) => item.id === activeExercise.id ? { ...item, completed: true } : item))} className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-[#8dff70] px-4 font-bold text-[#10200d] hover:bg-[#b3ff9f]"><Play size={17} fill="currentColor" /> Registrar serie</button></div><p className="mt-5 text-center text-xs text-[#758174]">Descanso recomendado: {activeExercise.restSeconds} segundos</p></section></div>
+    </div>{showSubstitution && <ExerciseSubstitution exercise={activeExercise} onClose={() => setShowSubstitution(false)} onConfirm={confirmSubstitution} />}
+  </main>;
 }
