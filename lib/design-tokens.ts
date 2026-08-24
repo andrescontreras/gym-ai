@@ -71,6 +71,11 @@ export const colors = {
   onErrorContainer: '#ffdad6',
   errorRed: '#ffb4ab',
 
+  // App semantic additions (for recommendation and confirmation states)
+  success: '#00e639',
+  warning: '#f2c94c',
+  info: '#66b3ff',
+
   // Background
   background: '#131313',
   onBackground: '#e5e2e1',
@@ -82,6 +87,14 @@ export const colors = {
   // Outline
   outline: '#84967e',
   outlineVariant: '#3b4b37',
+
+  // Border aliases for component-level tokens
+  border: {
+    default: '#3b4b37',
+    focus: '#00e639',
+    error: '#ffb4ab',
+    success: '#00e639',
+  },
 
   // Brand accent
   electricLime: '#00ff41',
@@ -310,6 +323,31 @@ export const components = {
     padding: `${spacing[2]} ${spacing[3]}`,
     fontSize: typography.fontSize.xs,
   },
+
+  // Status chip tokens (confidence, labels, quick states)
+  statusChip: {
+    borderRadius: borderRadius.full,
+    padding: `${spacing[1]} ${spacing[2]}`,
+    fontSize: typography.fontSize.xs,
+    fontWeight: typography.fontWeight.semibold,
+  },
+
+  // Metric tile tokens (BPM, Lactate, RPE, etc.)
+  metricTile: {
+    borderRadius: borderRadius.lg,
+    padding: spacing[3],
+    valueStyle: typography.styles['data-metric'],
+    labelStyle: typography.styles['label-caps'],
+  },
+
+  // Recommendation card tokens (AI substitution blocks)
+  recommendationCard: {
+    borderRadius: borderRadius.xl,
+    padding: spacing[4],
+    gap: spacing[3],
+    borderColor: colors.outlineVariant,
+    backgroundColor: colors.surfaceContainer,
+  },
 } as const;
 
 // ============================================================================
@@ -331,7 +369,23 @@ export const transitions = {
 } as const;
 
 // ============================================================================
-// 9. Z-INDEX SCALE (Stacking context)
+// 9. EFFECT TOKENS (Glow + overlays from Kinetic Precision style)
+// ============================================================================
+
+export const effects = {
+  glow: {
+    sm: '0 0 8px rgb(0 255 65 / 0.25)',
+    md: '0 0 12px rgb(0 255 65 / 0.32)',
+    lg: '0 0 18px rgb(0 255 65 / 0.4)',
+  },
+  overlay: {
+    dim: 'rgb(0 0 0 / 0.5)',
+    strong: 'rgb(0 0 0 / 0.7)',
+  },
+} as const;
+
+// ============================================================================
+// 10. Z-INDEX SCALE (Stacking context)
 // ============================================================================
 
 export const zIndex = {
@@ -357,6 +411,7 @@ export type BoxShadow = typeof boxShadow;
 export type Screens = typeof screens;
 export type Components = typeof components;
 export type Transitions = typeof transitions;
+export type Effects = typeof effects;
 export type ZIndex = typeof zIndex;
 
 // ============================================================================
@@ -372,6 +427,7 @@ export const designTokens = {
   screens,
   components,
   transitions,
+  effects,
   zIndex,
 } as const;
 

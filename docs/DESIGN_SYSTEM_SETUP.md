@@ -1,6 +1,6 @@
 # Design System Setup - Pre-Development
 
-> **Status:** ⏳ Waiting for Stitch MCP connection  
+> **Status:** ✅ Stitch MCP connected and refreshed with latest screens  
 > **Goal:** Extract design tokens → Create shared components → Team starts parallel work
 
 ---
@@ -391,32 +391,52 @@ interface ButtonProps {
 
 ### Once Stitch MCP is Connected:
 
-- [ ] Extract color palette (primary, secondary, semantic, grays)
-- [ ] Extract typography (fonts, sizes, weights, line heights)
-- [ ] Extract spacing scale
-- [ ] Extract border radius values
-- [ ] Extract shadow definitions
-- [ ] Extract breakpoints
-- [ ] Document any animations/transitions
-- [ ] Screenshot all component states from Stitch
-- [ ] Note any specific design decisions (margins, paddings, etc.)
+- [x] Extract color palette (primary, secondary, semantic, grays)
+- [x] Extract typography (fonts, sizes, weights, line heights)
+- [x] Extract spacing scale
+- [x] Extract border radius values
+- [x] Extract shadow definitions
+- [x] Extract breakpoints
+- [x] Document any animations/transitions
+- [x] Screenshot all component states from Stitch
+- [x] Note any specific design decisions (margins, paddings, etc.)
 
 ### Configuration:
 
-- [ ] Update `tailwind.config.ts` with design tokens
+- [x] Update `tailwind.config.ts` with design tokens
 - [ ] Update `app/globals.css` with CSS variables
-- [ ] Test that Tailwind generates correct classes
-- [ ] Verify responsive breakpoints work
+- [x] Test that Tailwind generates correct classes
+- [x] Verify responsive breakpoints work
 
 ### Component Creation:
 
-- [ ] Create priority 1 components (forms)
-- [ ] Create priority 2 components (layout)
-- [ ] Create priority 3 components (feedback)
-- [ ] Create priority 4 components (domain-specific)
-- [ ] Test all variants and states
-- [ ] Document usage in `docs/SHARED_COMPONENTS.md`
+- [x] Create priority 1 components (forms)
+- [x] Create priority 2 components (layout)
+- [x] Create priority 3 components (feedback)
+- [x] Create priority 4 components (domain-specific)
+- [x] Test all variants and states
+- [x] Document usage in `docs/SHARED_COMPONENTS.md`
 - [ ] Create component showcase/storybook (optional)
+
+---
+
+## Refresh Notes (Latest Screen Pass)
+
+Latest screens detected in Stitch project:
+- Updated Workout Confirmation
+- Input AI Constraints
+- AI Recommendations
+- Active Session Overview
+- Bench Press Detail
+- Kinetic Precision Training Interface
+
+Additive updates applied without removing previous tokens/components:
+- Added semantic token aliases: `success`, `warning`, `info`
+- Added effect tokens: glow + overlay
+- Added shared components:
+  - `StatusChip`
+  - `MetricTile`
+  - `RecommendationCard`
 
 ---
 

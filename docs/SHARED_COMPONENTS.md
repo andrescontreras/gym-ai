@@ -1,7 +1,23 @@
 # Shared Components Guide
 
-> **Status:** Essential components ready for use ✅  
-> **Last Updated:** August 21, 2026
+> **Status:** Essential + AI recommendation components ready ✅  
+> **Last Updated:** August 23, 2026
+
+## New Components From Latest Stitch Screens
+
+The latest screens (AI Recommendations, Input AI Constraints, Updated Workout Confirmation) introduced reusable patterns that are now implemented as shared components:
+
+- `StatusChip` in `components/shared/StatusChip.tsx`
+  - Variants: `default | success | warning | error | info | confidence`
+  - Use for confidence badges, quick status labels, and compact indicators
+
+- `MetricTile` in `components/shared/MetricTile.tsx`
+  - Use for KPI-style values like BPM, lactate, timeout, RPE, and workload values
+
+- `RecommendationCard` in `components/shared/RecommendationCard.tsx`
+  - Structured AI substitution block with stimulus match, sets/reps/load/RPE, and justification
+
+All are exported through `components/shared/index.ts`.
 
 ---
 

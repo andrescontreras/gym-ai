@@ -88,6 +88,22 @@ const config: Config = {
         // Brand accent
         accent: designTokens.colors.electricLime,
 
+        // Direct aliases used by shared components
+        "on-primary": designTokens.colors.onPrimary,
+        "on-primary-container": designTokens.colors.onPrimaryContainer,
+        "on-secondary": designTokens.colors.onSecondary,
+        "on-secondary-container": designTokens.colors.onSecondaryContainer,
+        "on-tertiary": designTokens.colors.onTertiary,
+        "on-surface": designTokens.colors.onSurface,
+        "on-surface-variant": designTokens.colors.onSurfaceVariant,
+        "on-background": designTokens.colors.onBackground,
+        "on-error": designTokens.colors.onError,
+
+        // Additional semantic aliases
+        success: designTokens.colors.success,
+        warning: designTokens.colors.warning,
+        info: designTokens.colors.info,
+
         // Text hierarchy
         text: {
           primary: designTokens.colors.text.primary,
@@ -118,6 +134,13 @@ const config: Config = {
 
       // Shadows
       boxShadow: designTokens.boxShadow,
+
+      // Glow effects from the updated design system language
+      dropShadow: {
+        "glow-sm": designTokens.effects.glow.sm,
+        "glow-md": designTokens.effects.glow.md,
+        "glow-lg": designTokens.effects.glow.lg,
+      },
 
       // Transitions
       transitionDuration: {
