@@ -16,14 +16,16 @@ your pocket**. Unlike static workout templates, it uses generative and algorithm
 2. **Enable real-time substitutions** with biomechanically equivalent alternatives
 3. **Optimize training volume** to maximize gains without overtraining
 4. **Minimize tracking friction** via voice input for sets/reps/weight
+5. **Secure user authentication** with registration, login, logout, and session management to protect personal fitness data
 
-Three main features:
+Five main features:
 
 | # | Feature | AI model |
 |---|---------|----------|
 | 1 | Onboarding → Routine Builder | Claude 3.5 Sonnet |
 | 2 | Real-time Exercise Substitution | Claude 3.5 Sonnet |
 | 3 | Volume Tracking, Progressive Overload & Voice Logging | Claude 3.5 Haiku (parsing) |
+| 4 | User Authentication & Management | N/A (Supabase Auth) |
 
 **Any change to training logic, volume math, or exercise selection must be checked against
 `docs/DOMAIN-RULES.md`.** Those rules are safety-critical, not stylistic.
@@ -36,7 +38,7 @@ Three main features:
 - **UI:** Tailwind CSS 4 + Shadcn UI (Radix primitives)
 - **Database:** Supabase (PostgreSQL + pgvector)
 - **AI:** Vercel AI SDK + Anthropic Claude 3.5 Sonnet / Haiku
-- **Auth:** Supabase Auth (planned — Phase 1, not yet implemented)
+- **Auth:** Supabase Auth (Phase 1 core feature — see [docs/features/user-authentication.md](docs/features/user-authentication.md))
 - **Package manager:** npm — do not introduce pnpm/yarn commands
 
 ---
@@ -269,7 +271,7 @@ Agents must **stop and ask** before:
 Done: project setup, schema, type definitions, AI service structure, file structure,
 wireframe alignment.
 In progress: onboarding UI, routine-generation endpoint, active session UI, substitution
-endpoint, voice input, volume tracking UI, exercise seeding (100+ with embeddings), Auth.
+endpoint, voice input, volume tracking UI, exercise seeding (100+ with embeddings), User Authentication & Management (signup, login, logout, password reset, session handling, protected routes).
 
 **Next milestone:** working end-to-end flow — onboarding → routine generation → active
 session → substitution → tracking.

@@ -8,6 +8,7 @@ Gym AI is an intelligent strength training and hypertrophy app that acts as a **
 2. **Enable Real-Time Substitutions** - Provides biomechanically equivalent exercise alternatives on-the-fly
 3. **Optimize Training Volume** - Calculates optimal volume to maximize gains without overtraining
 4. **Minimize Tracking Friction** - Voice input support for logging sets/reps/weight
+5. **User Authentication & Management** - Secure user identity management with registration, login, logout, and session handling to protect personal fitness data
 
 **Core Value Proposition**: A fully personalized, adaptive training system that respects injury limitations, prevents overtraining, and maintains biomechanical integrity—all powered by AI reasoning about movement patterns, muscle activation, periodization, and progressive overload.
 
@@ -17,7 +18,7 @@ Gym AI is an intelligent strength training and hypertrophy app that acts as a **
 - **UI**: Tailwind CSS 4 + Shadcn UI (Radix primitives)
 - **Database**: Supabase (PostgreSQL + pgvector for semantic search)
 - **AI**: Vercel AI SDK + Anthropic Claude 3.5 Sonnet
-- **Auth**: Supabase Auth (planned)
+- **Auth**: Supabase Auth (Phase 1 core feature — see [docs/features/user-authentication.md](docs/features/user-authentication.md))
 - **Package Manager**: npm
 
 ## Architecture & File Organization
@@ -401,7 +402,7 @@ Current phase: **MVP Foundation**
 9. ⏳ Voice Input Component (Web Speech API integration)
 10. ⏳ Volume Tracking UI (charts, personal records)
 11. ⏳ Exercise database seeding (100+ exercises with pgvector embeddings)
-12. ⏳ Supabase Auth integration
+12. ⏳ User Authentication & Management (Supabase Auth: signup, login, logout, password reset, session handling, protected routes)
 
 ### Phase 2: Core Features
 - Progressive load prediction (AI-powered)
