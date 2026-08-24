@@ -23,6 +23,30 @@ export const SubstitutionResponseSchema = z.object({
   suggestions: z.array(SubstitutionSuggestionSchema).min(1).max(3),
 });
 
+export const SubstitutionRequestSchema = z.object({
+  originalExercise: z.object({
+    id: z.string().min(1),
+    name: z.string().min(1),
+    muscleGroup: z.string().min(1),
+    synergistMuscles: z.array(z.string()).optional(),
+    movementPattern: z.enum([
+      'push_horizontal', 'push_vertical', 'pull_horizontal', 'pull_vertical',
+      'squat', 'hinge', 'lunge', 'carry',
+    ]),
+    equipment: z.array(z.string()).min(1),
+    resistanceProfile: z.enum(['constant', 'ascending', 'descending', 'accommodating']).optional(),
+  }),
+  exerciseId: z.string().min(1),
+  reason: z.string().trim().min(3),
+  reasonCategory: z.enum([
+    'equipment_occupied', 'pain_discomfort', 'lack_space', 'home_workout', 'preference', 'other',
+  ]).optional(),
+  currentWeight: z.number().nonnegative(),
+  currentReps: z.number().int().min(1).max(100),
+  currentRir: z.number().int().min(0).max(4),
+  voiceInput: z.boolean().optional(),
+});
+
 export const WorkoutPlanSchema = z.object({
   name: z.string(),
   durationWeeks: z.number().min(4).max(16),

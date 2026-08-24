@@ -80,8 +80,18 @@ export async function generateExerciseSubstitution(
     system: SYSTEM_PROMPT,
   });
 
+  const validSuggestions = response.suggestions.filter(
+    (suggestion) =>
+      suggestion.confidenceScore >= 0.5 &&
+      suggestion.exercise.movementPattern === originalExercise.movementPattern
+  );
+
+  if (validSuggestions.length === 0) {
+    throw new Error('AI returned no biomechanically valid substitutions');
+  }
+
   return {
-    suggestions: response.suggestions.map((s) => ({
+    suggestions: validSuggestions.map((s) => ({
       ...s,
       exercise: {
         id: crypto.randomUUID(),
