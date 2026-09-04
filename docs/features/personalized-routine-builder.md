@@ -694,9 +694,6 @@ Expected: an 8-12 week plan that uses a recovery-aware four-day split, avoids sq
 
 ### Changes Made
 
-| Date | Change | Reason |
-|---|---|---|
-| 2026-09-04 | Created this specification from the attached Kinetic Routine Wizard source. | Translate prototype behavior into an implementation-ready Gym AI feature contract. |
 
 ---
 
