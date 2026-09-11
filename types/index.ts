@@ -247,25 +247,42 @@ export interface Database {
   public: {
     Tables: {
       exercises: {
-        Row: Exercise;
-        Insert: Omit<Exercise, 'id'>;
-        Update: Partial<Omit<Exercise, 'id'>>;
+        Row: Exercise & Record<string, unknown>;
+        Insert: Omit<Exercise, 'id'> & Record<string, unknown>;
+        Update: Partial<Omit<Exercise, 'id'>> & Record<string, unknown>;
+        Relationships: [];
       };
       workout_sessions: {
-        Row: WorkoutSession;
-        Insert: Omit<WorkoutSession, 'id' | 'createdAt' | 'updatedAt'>;
-        Update: Partial<Omit<WorkoutSession, 'id' | 'createdAt' | 'updatedAt'>>;
+        Row: WorkoutSession & Record<string, unknown>;
+        Insert: Omit<WorkoutSession, 'id' | 'createdAt' | 'updatedAt'> &
+          Record<string, unknown>;
+        Update: Partial<Omit<WorkoutSession, 'id' | 'createdAt' | 'updatedAt'>> &
+          Record<string, unknown>;
+        Relationships: [];
       };
       session_exercises: {
-        Row: SessionExercise;
-        Insert: Omit<SessionExercise, 'id'>;
-        Update: Partial<Omit<SessionExercise, 'id'>>;
+        Row: SessionExercise & Record<string, unknown>;
+        Insert: Omit<SessionExercise, 'id'> & Record<string, unknown>;
+        Update: Partial<Omit<SessionExercise, 'id'>> & Record<string, unknown>;
+        Relationships: [];
       };
       user_profiles: {
-        Row: UserProfile;
-        Insert: Omit<UserProfile, 'id' | 'createdAt'>;
-        Update: Partial<Omit<UserProfile, 'id' | 'createdAt'>>;
+        Row: UserProfile & Record<string, unknown>;
+        Insert: {
+          id: string;
+          email: string;
+          name: string;
+          experience_level: UserProfile['experienceLevel'];
+          injuries?: UserProfile['injuries'];
+          preferences?: UserProfile['preferences'];
+          onboarding?: UserProfile['onboarding'];
+        } & Record<string, unknown>;
+        Update: Partial<Omit<UserProfile, 'id' | 'createdAt'>> &
+          Record<string, unknown>;
+        Relationships: [];
       };
     };
+    Views: {};
+    Functions: {};
   };
 }

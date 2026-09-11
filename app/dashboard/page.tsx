@@ -20,7 +20,7 @@ export default function DashboardPage() {
       <h1 className="text-3xl font-bold mb-4">Dashboard</h1>
       <p className="mb-2">Welcome, {profile?.name || user?.email}!</p>
       <p className="text-sm text-gray-600 mb-4">
-        Experience Level: {profile?.experience_level}
+        Experience Level: {profile?.experienceLevel}
       </p>
       <button
         onClick={() => signOut()}
