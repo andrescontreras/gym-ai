@@ -6,6 +6,14 @@ This folder contains all feature specifications, templates, and development guid
 
 ## 📚 Documentation Files
 
+### 🗺️ Start Here
+
+| Document | Purpose |
+|----------|---------|
+| **[TEAM-IMPLEMENTATION-PLAN.md](TEAM-IMPLEMENTATION-PLAN.md)** | Phased plan for the 3-person team: ownership, task cards, gates, collaboration rules, and the AI-agent hand-off prompt |
+| **[DOMAIN-RULES.md](DOMAIN-RULES.md)** | Safety-critical training science rules |
+| **[WIREFRAME-BRIEF.md](WIREFRAME-BRIEF.md)** | Screen and design decisions |
+
 ### 🎯 For Planning Features
 
 | Document | Purpose | When to Use |
