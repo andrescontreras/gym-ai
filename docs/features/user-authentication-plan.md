@@ -857,7 +857,7 @@ history.
 |---|---|---|---|
 | A1 | Not started | | |
 | A2 | Not started | | |
-| A3 | Not started | | |
+| A3 | In review | `feature/AUTH-03-profile-trigger` | Migration `20260901000000_auth_profile_trigger.sql`. No `seed.sql` exists yet, so nothing to adjust. Tested via docker exec (no local psql). Not applied to hosted Supabase (needs approval). |
 | A4 | Not started | | |
 | A5 | Not started | | |
 | A6 | Not started | | |
