@@ -11,6 +11,7 @@ import type {
  * Source of truth for training rules referenced throughout the app.
  */
 
+// Routine builder constants (Dev B)
 // Weekly volume caps (sets per muscle group per week) by experience level.
 export const WEEKLY_VOLUME_CAPS = {
   beginner: { min: 10, max: 12 },
@@ -18,6 +19,10 @@ export const WEEKLY_VOLUME_CAPS = {
   advanced: { min: 16, max: 22 },
 } as const;
 
+// Recovery window between training the same muscle group (hours).
+export const RECOVERY_WINDOW_HOURS = { min: 48, max: 72 } as const;
+
+// Progress and tracking constants (Dev A)
 // Reps in Reserve interpretation.
 export const RIR = {
   FAILURE: 0,
@@ -32,9 +37,7 @@ export const LOAD_INCREMENT_KG = {
   lowerBody: 5,
 } as const;
 
-// Recovery window between training the same muscle group (hours).
-export const RECOVERY_WINDOW_HOURS = { min: 48, max: 72 } as const;
-
+// Catalog and substitution constants (Dev C)
 // Load translation multipliers used when substituting exercises.
 export const LOAD_TRANSLATION = {
   barbellToDumbbellRomFactor: 0.85,

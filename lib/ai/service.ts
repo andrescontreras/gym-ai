@@ -24,10 +24,12 @@ import {
   VoiceParsingSchema,
 } from './schemas';
 
+// Shared AI provider
 const anthropic = createAnthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 });
 
+// Routine builder (Dev B)
 /**
  * AI Service: Routine Builder
  * Generates a personalized workout plan based on user onboarding data
@@ -61,6 +63,14 @@ export async function generateWorkoutPlan(
   };
 }
 
+function extractInjuryConsiderations(injuries: Injury[]): string[] {
+  return injuries.map((injury) => {
+    const restrictedPatterns = injury.restrictedPatterns?.join(', ') || 'none';
+    return `${injury.area} (${injury.severity}): Avoid ${restrictedPatterns}`;
+  });
+}
+
+// Substitution (Dev C)
 /**
  * AI Service: Exercise Substitution
  * Provides biomechanically equivalent alternatives in real-time
@@ -105,6 +115,7 @@ export async function generateExerciseSubstitution(
   };
 }
 
+// Progress tracking and voice parsing (Dev A)
 /**
  * AI Service: Voice Input Parser
  * Extracts structured tracking data from natural language voice input
@@ -164,12 +175,4 @@ Provide a brief rationale.`;
     suggestedReps: repsMatch ? parseInt(repsMatch[1]) : recentHistory[0].reps,
     rationale: text,
   };
-}
-
-// Helper Functions
-function extractInjuryConsiderations(injuries: Injury[]): string[] {
-  return injuries.map((injury) => {
-    const restrictedPatterns = injury.restrictedPatterns?.join(', ') || 'none';
-    return `${injury.area} (${injury.severity}): Avoid ${restrictedPatterns}`;
-  });
 }
