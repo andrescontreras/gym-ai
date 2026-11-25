@@ -1,5 +1,6 @@
-import { createAnthropic } from '@ai-sdk/anthropic';
-import { generateObject, generateText } from 'ai';
+import { generateText } from 'ai';
+import { AI_MODEL_IDS, AI_TIMEOUT_MS, getAnthropicProvider } from './config';
+import { generateValidatedObject, requireGeneratedObject } from './generate-validated-object';
 import type {
   RoutineBuilderRequest,
   RoutineBuilderResponse,
@@ -24,11 +25,6 @@ import {
   VoiceParsingSchema,
 } from './schemas';
 
-// Shared AI provider
-const anthropic = createAnthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY!,
-});
-
 // Routine builder (Dev B)
 /**
  * AI Service: Routine Builder
@@ -39,12 +35,14 @@ export async function generateWorkoutPlan(
 ): Promise<RoutineBuilderResponse> {
   const prompt = buildRoutineBuilderPrompt(request);
 
-  const { object: plan } = await generateObject({
-    model: anthropic('claude-3-5-sonnet-20241022'),
+  const plan = requireGeneratedObject(await generateValidatedObject({
+    modelId: AI_MODEL_IDS.reasoning,
     schema: WorkoutPlanSchema,
     prompt,
-    system: SYSTEM_PROMPT,
-  });
+    instructions: SYSTEM_PROMPT,
+    clarifiedPrompt: `${prompt}\n\nReturn a complete plan matching the required schema.`,
+    timeoutMs: AI_TIMEOUT_MS.reasoning,
+  }));
 
   return {
     plan: {
@@ -83,12 +81,14 @@ export async function generateExerciseSubstitution(
   const startTime = Date.now();
   const prompt = buildSubstitutionPrompt(originalExercise, request, userProfile);
 
-  const { object: response } = await generateObject({
-    model: anthropic('claude-3-5-sonnet-20241022'),
+  const response = requireGeneratedObject(await generateValidatedObject({
+    modelId: AI_MODEL_IDS.reasoning,
     schema: SubstitutionResponseSchema,
     prompt,
-    system: SYSTEM_PROMPT,
-  });
+    instructions: SYSTEM_PROMPT,
+    clarifiedPrompt: `${prompt}\n\nReturn substitutions matching the required schema and original movement pattern.`,
+    timeoutMs: AI_TIMEOUT_MS.reasoning,
+  }));
 
   const validSuggestions = response.suggestions.filter(
     (suggestion) =>
@@ -126,13 +126,15 @@ export async function parseVoiceTrackingInput(
   const transcription = input.transcription || '';
   const prompt = buildVoiceParsingPrompt(transcription, input.exerciseContext);
 
-  const { object: parsed } = await generateObject({
-    model: anthropic('claude-3-5-haiku-20241022'), // Use Haiku for speed
+  const parsed = requireGeneratedObject(await generateValidatedObject({
+    modelId: AI_MODEL_IDS.parsing,
     schema: VoiceParsingSchema,
     prompt,
-    system:
+    instructions:
       'You are a voice input parser for a gym tracking app. Extract reps, weight, and effort metrics from natural language.',
-  });
+    clarifiedPrompt: `${prompt}\n\nReturn only the fields specified by the schema with a confidence score.`,
+    timeoutMs: AI_TIMEOUT_MS.reasoning,
+  }));
 
   return {
     ...parsed,
@@ -161,9 +163,10 @@ Consider:
 Provide a brief rationale.`;
 
   const { text } = await generateText({
-    model: anthropic('claude-3-5-haiku-20241022'),
+    model: getAnthropicProvider()(AI_MODEL_IDS.parsing),
     prompt,
-    system: 'You are an expert strength coach providing progressive overload recommendations.',
+    instructions: 'You are an expert strength coach providing progressive overload recommendations.',
+    timeout: AI_TIMEOUT_MS.predictLoad,
   });
 
   // Parse the response (simplified - in production, use structured output)

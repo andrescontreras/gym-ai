@@ -22,9 +22,9 @@ Five main features:
 
 | # | Feature | AI model |
 |---|---------|----------|
-| 1 | Onboarding → Routine Builder | Claude 3.5 Sonnet |
-| 2 | Real-time Exercise Substitution | Claude 3.5 Sonnet |
-| 3 | Volume Tracking, Progressive Overload & Voice Logging | Claude 3.5 Haiku (parsing) |
+| 1 | Onboarding → Routine Builder | Claude Sonnet 4.5 |
+| 2 | Real-time Exercise Substitution | Claude Sonnet 4.5 |
+| 3 | Volume Tracking, Progressive Overload & Voice Logging | Claude Haiku 4.5 (parsing) |
 | 4 | User Authentication & Management | N/A (Supabase Auth) |
 
 **Any change to training logic, volume math, or exercise selection must be checked against
@@ -37,7 +37,7 @@ Five main features:
 - **Framework:** Next.js 16 (App Router) + TypeScript
 - **UI:** Tailwind CSS 4 + Shadcn UI (Radix primitives)
 - **Database:** Supabase (PostgreSQL + pgvector)
-- **AI:** Vercel AI SDK + Anthropic Claude 3.5 Sonnet / Haiku
+- **AI:** Vercel AI SDK + Anthropic Claude Sonnet 4.5 / Haiku 4.5 (`lib/ai/config.ts`)
 - **Auth:** Supabase Auth (Phase 1 core feature — see [docs/features/user-authentication.md](docs/features/user-authentication.md))
 - **Package manager:** npm — do not introduce pnpm/yarn commands
 
