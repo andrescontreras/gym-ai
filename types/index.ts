@@ -289,46 +289,110 @@ export interface RoutineBuilderResponse {
 }
 
 // Database types (Dev C)
+// Mirrors supabase/migrations exactly. supabase-js does not convert case: map rows in lib/supabase/<area>.ts.
+type ExerciseRow = {
+  id: string;
+  name: string;
+  muscle_group: string;
+  synergist_muscles: string[] | null;
+  movement_pattern: MovementPattern;
+  equipment: string[] | null;
+  resistance_profile: ResistanceProfile | null;
+  description: string | null;
+  video_url: string | null;
+  embedding: string | null;
+  biomechanical_tags: string[] | null;
+  created_at: string;
+};
+
+type UserProfileRow = {
+  id: string;
+  email: string;
+  name: string | null;
+  experience_level: UserProfile['experienceLevel'];
+  injuries: Injury[] | null;
+  preferences: UserProfile['preferences'] | null;
+  onboarding: OnboardingData | null;
+  created_at: string;
+};
+
+type WorkoutPlanRow = {
+  id: string;
+  user_id: string;
+  name: string;
+  duration_weeks: number;
+  microcycles: Microcycle[];
+  goals: Goal[];
+  volume_profile: VolumeProfile | null;
+  ai_rationale: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+type WorkoutSessionRow = {
+  id: string;
+  user_id: string;
+  plan_id: string | null;
+  date: string;
+  name: string;
+  status: WorkoutSession['status'];
+  created_at: string;
+  updated_at: string;
+};
+
+type SessionExerciseRow = {
+  id: string;
+  session_id: string;
+  exercise_id: string | null;
+  sets: number;
+  reps: number;
+  weight: number;
+  rir: number;
+  rpe: number | null;
+  rest_seconds: number;
+  notes: string | null;
+  completed: boolean;
+  substituted_from: string | null;
+};
+
+type SetLogRow = {
+  id: string;
+  session_exercise_id: string;
+  set_number: number;
+  reps_completed: number;
+  weight_used: number;
+  rir: number;
+  rpe: number | null;
+  created_at: string;
+};
+
+type TableDefinition<Row, RequiredOnInsert extends keyof Row> = {
+  Row: Row;
+  Insert: Pick<Row, RequiredOnInsert> & Partial<Omit<Row, RequiredOnInsert>>;
+  Update: Partial<Row>;
+  Relationships: [];
+};
+
 export interface Database {
   public: {
     Tables: {
-      exercises: {
-        Row: Exercise & Record<string, unknown>;
-        Insert: Omit<Exercise, 'id'> & Record<string, unknown>;
-        Update: Partial<Omit<Exercise, 'id'>> & Record<string, unknown>;
-        Relationships: [];
-      };
-      workout_sessions: {
-        Row: WorkoutSession & Record<string, unknown>;
-        Insert: Omit<WorkoutSession, 'id' | 'createdAt' | 'updatedAt'> &
-          Record<string, unknown>;
-        Update: Partial<Omit<WorkoutSession, 'id' | 'createdAt' | 'updatedAt'>> &
-          Record<string, unknown>;
-        Relationships: [];
-      };
-      session_exercises: {
-        Row: SessionExercise & Record<string, unknown>;
-        Insert: Omit<SessionExercise, 'id'> & Record<string, unknown>;
-        Update: Partial<Omit<SessionExercise, 'id'>> & Record<string, unknown>;
-        Relationships: [];
-      };
-      user_profiles: {
-        Row: UserProfile & Record<string, unknown>;
-        Insert: {
-          id: string;
-          email: string;
-          name: string;
-          experience_level: UserProfile['experienceLevel'];
-          injuries?: UserProfile['injuries'];
-          preferences?: UserProfile['preferences'];
-          onboarding?: UserProfile['onboarding'];
-        } & Record<string, unknown>;
-        Update: Partial<Omit<UserProfile, 'id' | 'createdAt'>> &
-          Record<string, unknown>;
-        Relationships: [];
-      };
+      exercises: TableDefinition<ExerciseRow, 'name' | 'muscle_group' | 'movement_pattern'>;
+      user_profiles: TableDefinition<UserProfileRow, 'id' | 'email'>;
+      workout_plans: TableDefinition<WorkoutPlanRow, 'user_id' | 'name' | 'duration_weeks'>;
+      workout_sessions: TableDefinition<WorkoutSessionRow, 'user_id' | 'date' | 'name'>;
+      session_exercises: TableDefinition<
+        SessionExerciseRow,
+        'session_id' | 'sets' | 'reps' | 'weight' | 'rir'
+      >;
+      set_logs: TableDefinition<
+        SetLogRow,
+        'session_exercise_id' | 'set_number' | 'reps_completed' | 'weight_used' | 'rir'
+      >;
     };
-    Views: {};
-    Functions: {};
+    Views: { [_ in never]: never };
+    Functions: { [_ in never]: never };
   };
 }
+
+export type TableRow<T extends keyof Database['public']['Tables']> =
+  Database['public']['Tables'][T]['Row'];

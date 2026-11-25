@@ -359,7 +359,7 @@ NEXT_PUBLIC_APP_URL=               # App URL (localhost:3000 in dev)
 ### Supabase Gotchas
 
 - camelCase in TypeScript types (`muscleGroup`) vs snake_case in database (`muscle_group`)
-- Automatic conversion handled by Supabase client, but be aware when writing raw SQL
+- supabase-js does **not** convert case: map rows through `lib/supabase/<area>.ts` mappers
 - RLS policies not yet enabled — will be required before production
 
 ### AI Integration
