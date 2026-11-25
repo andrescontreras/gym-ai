@@ -49,13 +49,13 @@ export async function generateWorkoutPlan(
       id: crypto.randomUUID(),
       userId: request.userId,
       ...plan,
-      goals: request.onboardingData.goals,
+      goals: [{ type: request.onboardingData.goal, priority: 'primary' }],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     },
     aiRationale: plan.aiRationale,
     injuryConsiderations: extractInjuryConsiderations(
-      request.onboardingData.injuryHistory
+      request.onboardingData.injuries
     ),
     progressionNotes: 'Progressive overload: Add 2.5kg or 1 rep per week when RIR ≤ 2.',
   };
@@ -63,8 +63,7 @@ export async function generateWorkoutPlan(
 
 function extractInjuryConsiderations(injuries: Injury[]): string[] {
   return injuries.map((injury) => {
-    const restrictedPatterns = injury.restrictedPatterns?.join(', ') || 'none';
-    return `${injury.area} (${injury.severity}): Avoid ${restrictedPatterns}`;
+    return `${injury.zone} (${injury.severity})`;
   });
 }
 

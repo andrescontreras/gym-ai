@@ -1,6 +1,7 @@
 # Personalized Routine Builder - Specification
 
-> Feature specification based on the Kinetic Routine Wizard prototype at `/Users/oscarepam/Downloads/kinetic-routine-wizard` and the Gym AI safety rules in `docs/DOMAIN-RULES.md`.
+> The Kinetic Routine Wizard is visual reference only. The product flow follows
+> `WIREFRAME-BRIEF.md` §3.1 and the Gym AI safety rules in `docs/DOMAIN-RULES.md`.
 
 ---
 
@@ -21,7 +22,7 @@
 
 ### What This Feature Does
 
-The builder gathers a trainee's goal, experience, frequency, session duration, split preference, equipment, muscle priorities, limitations, effort method, rest preference, and optional notes. It then produces a personalized weekly routine with exercise prescriptions, warm-up and cooldown protocols, weekly volume, progression guidance, recovery notes, and explainable AI diagnostics.
+The builder captures the nine-step onboarding contract: goal, experience, biometrics, injuries, availability, equipment, preferred split, optional known lifts, and review. It then produces a personalized weekly routine with exercise prescriptions, weekly volume, progression guidance, recovery notes, and explainable AI diagnostics.
 
 ### User Problem Solved
 
@@ -48,8 +49,7 @@ Users lack a practical, individualized program and often choose exercises, volum
 - As a beginner, I want an experience-appropriate starting volume and intensity.
 - As a lifter with knee, shoulder, wrist, elbow, or lower-back discomfort, I want unsafe movements removed from my plan.
 - As a time-constrained user, I want sessions matched to 30, 45, 60, 75, or 90 minutes.
-- As a user with a muscle priority, I want that muscle to receive additional planned volume.
-- As a user reviewing a plan, I want to select a day, replace an exercise, export the routine, ask a coach question, or recalibrate.
+- As a user reviewing a plan, I want to select a day, replace an exercise, or recalibrate.
 - As an active lifter, I want to log weight, reps, RPE, rest, and completion by set.
 
 ---
@@ -59,17 +59,14 @@ Users lack a practical, individualized program and often choose exercises, volum
 ### Happy Path
 
 1. User opens `/onboarding` or selects **Create your routine**.
-2. User selects a primary goal and experience level.
-3. User selects 2-6 training days, 30-90 minutes per session, and a split preference.
-4. User selects a training environment and available equipment.
-5. User selects priority muscle groups and limitations from the front/back body map.
-6. User selects RIR, RPE, or technical-failure intensity; a rest preference; and optional custom notes.
-7. User selects **Calibrate and generate**.
-8. System shows staged analysis: profile and goals, MRV, equipment, safety filters, then microcycle synthesis.
-9. System returns a generated routine and persists it for the user.
-10. User reviews diagnostic tiles, selects a training day, reviews warm-up, exercises, cooldown, volume, and progression.
-11. User selects **Start session**, logs sets in the active-workout player, and finishes the workout.
-12. System persists the workout log and returns the user to the routine/dashboard.
+2. User completes the nine steps: goal, experience, biometrics, injuries, availability, equipment, preferred split, optional known lifts, and review.
+3. On review, the user can edit answers and confirm any split-conflict recommendation.
+4. User selects **Generate my program**.
+5. System shows staged analysis: profile and goals, volume, equipment, safety filters, then microcycle synthesis.
+6. System returns a generated routine and persists it for the user.
+7. User reviews diagnostics, selects a training day, and reviews exercises, volume, and progression.
+8. User starts a session, logs sets in the active-workout player, and finishes the workout.
+9. System persists the workout log and returns the user to the routine/dashboard.
 
 ### Alternative Flows
 
@@ -86,10 +83,7 @@ Users lack a practical, individualized program and often choose exercises, volum
 3. User reviews the alternative and applies it.
 4. The plan updates and persists.
 
-**Export**
-
-1. User opens **Export**.
-2. User copies a plain-text plan, downloads JSON, or prints/saves as PDF.
+Export and coach chat are out of MVP scope.
 
 ### Error Flows
 
@@ -109,17 +103,19 @@ Users lack a practical, individualized program and often choose exercises, volum
 
 | # | Screen Name | Source | Description |
 |---|---|---|---|
-| 1 | Goal and experience | `Step1Goal.tsx` | Goal cards and experience segmented control. |
-| 2 | Frequency and split | `Step2Frequency.tsx` | 2-6 day options, duration, and split preference. |
-| 3 | Equipment | `Step3Equipment.tsx` | Environment cards plus equipment checklist. |
-| 4 | Body map | `Step4BodyMap.tsx` | Front/back anatomy map for priorities and limitations. |
-| 5 | Calibration | `Step5Calibration.tsx` | Intensity, rest, custom notes, and generation action. |
-| 6 | AI loading | `AiLoadingScreen.tsx` | Staged calibration messages and progress. |
-| 7 | Routine dashboard | `RoutineDashboard.tsx` | Plan diagnostics, day selection, prescriptions, and volume. |
-| 8 | Exercise replacement | `ExerciseSwapModal.tsx` | Catalog alternatives and AI alternative request. |
-| 9 | Export | `ExportModal.tsx` | Copy, JSON download, and print/PDF actions. |
-| 10 | Coach drawer | `AiCoachDrawer.tsx` | Contextual coach conversation and quick questions. |
-| 11 | Active workout | `ActiveWorkoutPlayer.tsx` | Set logging, rest timer, plate calculator, and completion. |
+| Step 1 | Goal | Single-select MVP goal. |
+| Step 2 | Experience | Beginner, intermediate, or advanced. |
+| Step 3 | Biometrics | Sex (optional until product vocabulary is decided), age, height, bodyweight, and kg/lb units. |
+| Step 4 | Injury map | Front/back body map with zone, severity, and optional note. |
+| Step 5 | Availability | 2-6 days/week and 30/45/60/75/90 minutes/session. |
+| Step 6 | Equipment | Commercial, home, or bodyweight preset with optional equipment checklist. |
+| Step 7 | Preferred split | Full body, upper/lower, PPL, or no preference; a soft input. |
+| Step 8 | Known 1RM | Optional squat, bench, and deadlift best sets (weight × reps); "I don't know" is valid. |
+| Step 9 | Review | Editable summary and split-conflict card. |
+| — | AI loading | Staged analysis and progress. |
+| — | Routine dashboard | Plan diagnostics, day selection, prescriptions, and volume. |
+| — | Exercise replacement | Catalog alternatives and AI alternative request. |
+| — | Active workout | Set logging, rest timer, plate calculator, and completion. |
 
 ### Component States
 
@@ -160,7 +156,7 @@ Users lack a practical, individualized program and often choose exercises, volum
 
 - Desktop (`1024px+`): two-column selection grids, dense dashboard day grid, and centered active workout content.
 - Tablet (`768px-1023px`): two-column cards where practical; dashboard controls wrap without losing actions.
-- Mobile (`<768px`): single-column wizard, horizontal scroll for dense controls, modal/sheet replacement and export views, primary actions in the lower thumb zone.
+- Mobile (`<768px`): single-column wizard, horizontal scroll for dense controls, modal/sheet replacement views, primary actions in the lower thumb zone.
 - Tap targets must be at least `48px`; user-entered notes and long translated labels must wrap without clipping.
 
 ---
@@ -178,19 +174,15 @@ Users lack a practical, individualized program and often choose exercises, volum
 ```typescript
 {
   onboardingData: {
-    goals: [{ type: 'hypertrophy', priority: 'primary' }],
-    injuryHistory: [{ area: 'knee', severity: 'moderate', restrictedPatterns: ['squat'] }],
-    daysPerWeek: 4,
-    sessionDuration: 60,
-    equipment: ['barbell', 'dumbbells', 'cables'],
-    completedAt: '2026-09-04T12:00:00.000Z'
-  },
-  calibration: {
-    targetMuscles: ['chest', 'back'],
-    splitPreference: 'upper_lower',
-    intensityMethod: 'rir',
-    restPreference: 'moderate',
-    customNotes: 'Prioritize lateral deltoids'
+    version: 2,
+    goal: 'hypertrophy',
+    experienceLevel: 'intermediate',
+    biometrics: { age: 30, heightCm: 175, bodyweight: 80, units: 'kg' },
+    injuries: [{ zone: 'knee', severity: 'moderate', notes: 'Pain when squatting deeply' }],
+    availability: { daysPerWeek: 4, minutesPerSession: 60 },
+    equipment: { preset: 'home', items: ['dumbbells', 'resistance_bands'] },
+    preferredSplit: 'upper_lower',
+    knownLifts: { bench: { weight: 80, reps: 5 } }
   }
 }
 ```
@@ -215,7 +207,7 @@ Users lack a practical, individualized program and often choose exercises, volum
 { error: 'We could not safely generate a routine.', code: 'UNSAFE_GENERATED_PLAN' }
 ```
 
-**Current status:** `app/api/routines/generate/route.ts` returns `501`. The existing `generateWorkoutPlan` service calls Claude 3.5 Sonnet with `WorkoutPlanSchema`; route validation, authorization, safety checks, and persistence remain to be implemented.
+**Current status:** `app/api/routines/generate/route.ts` returns `501`. The existing `generateWorkoutPlan` service uses `claude-sonnet-4-5` with `WorkoutPlanSchema`; route validation, authorization, safety checks, and persistence remain to be implemented.
 
 ### Endpoint 2: Save Workout Log
 
@@ -258,7 +250,33 @@ The prototype invokes `/api/suggest-alternative`; Gym AI must use its existing t
 
 - Operations: Read and update.
 - Columns: `id`, `experience_level`, `injuries`, `preferences`, `onboarding`.
-- New fields needed: target muscles, split preference, intensity method, rest preference, and custom notes should be modeled in `onboarding` or an explicitly typed profile shape.
+- `onboarding` stores the complete, versioned `OnboardingData` v2 snapshot as the canonical onboarding record.
+- `experience_level` and `injuries` mirror `onboarding.experienceLevel` and `onboarding.injuries` for existing profile consumers.
+- Goal, biometrics, availability, equipment, preferred split, and known lifts are stored in the `onboarding` JSONB snapshot. `preferences` remains for durable user preferences outside this submission.
+- No schema migration is required for RB-01. Any update must write the snapshot and its mirrors atomically.
+
+### Onboarding contract (v2)
+
+The canonical shape is `OnboardingData` in `types/index.ts`, validated by
+`OnboardingSchema` in `lib/validation/onboarding.ts`. It represents:
+
+| Field | Contract |
+|---|---|
+| `version` | Literal `2`. |
+| `goal` | `hypertrophy`, `fat_loss`, or `endurance`. Strength remains in the shared plan `Goal` type but is not an MVP onboarding choice (TEAM-IMPLEMENTATION-PLAN.md Q12). |
+| `experienceLevel` | `beginner`, `intermediate`, or `advanced`; mirrored to `experience_level`. |
+| `biometrics` | Optional free-text `sex`, age, height in centimeters, bodyweight, and bodyweight/lift units (`kg` or `lb`). |
+| `injuries` | Unique zone entries with severity and optional notes; mirrored to `injuries`. |
+| `availability` | 2-6 training days and 30/45/60/75/90 minutes per session. |
+| `equipment` | An equipment item list and optional `commercial`, `home`, or `bodyweight` preset; at least one preset or item is required. |
+| `preferredSplit` | `full_body`, `upper_lower`, `ppl`, or `no_preference`; the generator may override it for recovery. |
+| `knownLifts` | Optional squat, bench, and deadlift best sets (`weight` × `reps`); omitted or empty means the user does not know their 1RM. Best sets are converted using Epley as described in `WIREFRAME-BRIEF.md` §3.1. |
+
+Height is normalized to centimeters; bodyweight and best-set weights use `biometrics.units`.
+The wireframe does not define allowed sex values or whether the field is required, so the
+contract leaves it optional and accepts a bounded string until product resolves the UI.
+The injury-zone vocabulary uses the current proposed catalog zones; the zone-to-restricted-
+pattern mapping remains pending product approval (TEAM-IMPLEMENTATION-PLAN.md Q1).
 
 **Table: `workout_plans`**
 
@@ -300,7 +318,7 @@ The prototype invokes `/api/suggest-alternative`; Gym AI must use its existing t
 
 **Frequency**
 
-- Rule: accept 2-6 days per week, matching the prototype and wireframe.
+- Rule: accept 2-6 days per week, matching the wireframe.
 - Error: `Choose between 2 and 6 training days per week.`
 
 **Session duration**
@@ -310,25 +328,20 @@ The prototype invokes `/api/suggest-alternative`; Gym AI must use its existing t
 
 **Equipment**
 
-- Rule: at least one environment/equipment option is required; every selected exercise must be compatible.
+- Rule: require an equipment preset or at least one equipment item; every selected exercise must be compatible.
 - Error: `Select the equipment available to you.`
 
 **Limitations and injuries**
 
-- Rule: map each reported limitation to internal restricted movement patterns and veto them completely.
+- Rule: capture each zone and severity. Map injury zones to restricted movement patterns only after product approval of the mapping (TEAM-IMPLEMENTATION-PLAN.md Q1).
 - Error: `Tell us the severity for each selected injury area.`
-
-**Custom notes**
-
-- Rule: optional, but must not override a hard safety constraint.
-- Error: unsafe instruction is ignored and described in the rationale.
 
 ### Calculations & Algorithms
 
 **Split selection**
 
 - 2 days: Full Body A/B.
-- 3 days: Full Body when selected; otherwise an explicitly justified alternative. The current prototype uses PPL by default, but production must avoid the 3-day PPL recovery/frequency conflict unless the user knowingly retains it.
+- 3 days: Full Body when selected; otherwise an explicitly justified alternative. The review step surfaces the 3-day PPL recovery/frequency conflict and lets the user choose the recommended split or retain their preference.
 - 4 days: Upper/Lower.
 - 5 days: PPL plus Upper/Lower.
 - 6 days: Push/Pull/Legs twice weekly.
@@ -340,16 +353,6 @@ The prototype invokes `/api/suggest-alternative`; Gym AI must use its existing t
 | Beginner | 10-12 |
 | Intermediate | 12-18 |
 | Advanced | 16-22 |
-
-- Priority muscles may receive additional volume only while staying within the hard cap.
-- The prototype adds one exercise and one set for target muscles; production must calculate total sets rather than rely on a multiplier.
-
-**Intensity and rest**
-
-- RIR: default target of RIR 1-2 for hypertrophy work.
-- RPE: intermediate target RPE 7.5-8.5; advanced target RPE 8.5-9.5.
-- Technical failure: only permit under explicit, safety-reviewed criteria; it is not a default for every last exercise.
-- Rest: short 60 seconds, moderate uses each exercise default, strength 180 seconds.
 
 **Periodization**
 
@@ -373,15 +376,15 @@ The prototype invokes `/api/suggest-alternative`; Gym AI must use its existing t
 
 ### AI Service Used
 
-- Model: Claude 3.5 Sonnet (`claude-3-5-sonnet-20241022`).
+- Model: Claude Sonnet 4.5 (`claude-sonnet-4-5`, configured in `lib/ai/config.ts`).
 - Function: `generateWorkoutPlan` in `lib/ai/service.ts`.
 - Prompt builder: `buildRoutineBuilderPrompt` in `lib/ai/prompts.ts`.
-- Validation: `WorkoutPlanSchema` through `generateObject` in `lib/ai/schemas.ts`.
+- Validation: `WorkoutPlanSchema` from `lib/ai/schemas.ts`, called via `generateValidatedObject` in `lib/ai/service.ts`.
 - Why: routine creation requires safety-sensitive reasoning across injuries, equipment, volume, recovery, and periodization.
 
 ### Prompt Requirements
 
-The request must include user experience, goals, injury history and restrictions, frequency, session duration, equipment, muscle priorities, selected split, intensity method, rest preference, and custom notes. It must direct the model to return only the typed plan structure, a programming rationale, weekly volume distribution, and explicit injury considerations.
+The request uses the v2 onboarding contract: experience, goal, biometrics needed for load context, injury zones and notes, availability, equipment, preferred split, and optional best sets. It must direct the model to return only the typed plan structure, a programming rationale, weekly volume distribution, and explicit injury considerations. Injury-zone restrictions must follow the approved mapping once Q1 is resolved; do not infer an approved mapping from the current proposal.
 
 ### Response Format (Zod Schema)
 
@@ -420,12 +423,16 @@ const WorkoutPlanSchema = z.object({
 
 | Component | Location | Purpose |
 |---|---|---|
-| `OnboardingWizard` | `components/onboarding/OnboardingWizard.tsx` | Five-step builder state and validation. |
-| `GoalExperienceStep` | `components/onboarding/goal-experience-step.tsx` | Goal cards and experience selection. |
-| `ScheduleSplitStep` | `components/onboarding/schedule-split-step.tsx` | Frequency, duration, and soft split preference. |
-| `EquipmentStep` | `components/onboarding/equipment-step.tsx` | Environment and equipment selections. |
-| `BodyMapStep` | `components/onboarding/body-map-step.tsx` | Priorities, injuries, severity, and notes. |
-| `CalibrationStep` | `components/onboarding/calibration-step.tsx` | Intensity, rest, and custom constraints. |
+| `OnboardingWizard` | `components/onboarding/OnboardingWizard.tsx` | Nine-step wizard state, review, and validation. |
+| `GoalStep` | `components/onboarding/goal-step.tsx` | Single goal selection. |
+| `ExperienceStep` | `components/onboarding/experience-step.tsx` | Experience level selection. |
+| `BiometricsStep` | `components/onboarding/biometrics-step.tsx` | Age, height, bodyweight, units, and optional sex. |
+| `InjuryStep` | `components/onboarding/injury-step.tsx` | Injury zones, severity, and notes. |
+| `AvailabilityStep` | `components/onboarding/availability-step.tsx` | Training days and session duration. |
+| `EquipmentStep` | `components/onboarding/equipment-step.tsx` | Preset and equipment selections. |
+| `PreferredSplitStep` | `components/onboarding/preferred-split-step.tsx` | Soft split preference. |
+| `KnownLiftsStep` | `components/onboarding/known-lifts-step.tsx` | Optional best-set entries. |
+| `ReviewStep` | `components/onboarding/review-step.tsx` | Editable summary and split-conflict card. |
 | `RoutineGenerationProgress` | `components/routine/routine-generation-progress.tsx` | Real async generation state. |
 | `RoutineDashboard` | `components/routine/routine-dashboard.tsx` | Plan review, day navigation, diagnostics, and volume. |
 | `ActiveWorkoutPlayer` | `components/session/active-workout-player.tsx` | Logging, timer, calculator, and completion. |
@@ -491,7 +498,7 @@ const ERROR_MESSAGES = {
 **No safe exercise for a muscle/equipment combination**
 
 - Display: explain that the current constraints do not support a safe exercise.
-- CTA: edit equipment, limitations, or custom notes; never silently use the unfiltered catalog.
+- CTA: edit equipment or limitations; never silently use the unfiltered catalog.
 
 ### Loading States
 
@@ -505,7 +512,7 @@ const ERROR_MESSAGES = {
 
 - Training days: 2-6.
 - Duration choices: 30, 45, 60, 75, 90 minutes.
-- Goals: one primary goal in the source prototype; Gym AI types support primary and secondary goals.
+- Goal: one MVP goal per onboarding submission. The UI offers hypertrophy, fat loss, and endurance; `strength` remains represented in the shared plan `Goal` type but is not an MVP onboarding choice (TEAM-IMPLEMENTATION-PLAN.md Q12).
 - No max saved-routine limit is defined.
 
 ---
@@ -514,7 +521,7 @@ const ERROR_MESSAGES = {
 
 ### Functional Requirements
 
-- [ ] User can complete the five-step builder and generate a plan.
+- [ ] User can complete all nine onboarding steps, skip known lifts, review the summary, and generate a plan.
 - [ ] The authenticated identity controls routine ownership.
 - [ ] Plans pass strict structured validation before display and persistence.
 - [ ] Plans exclude restricted patterns and unavailable equipment.
@@ -537,7 +544,7 @@ const ERROR_MESSAGES = {
 - [ ] No limitations.
 - [ ] Multiple limitations.
 - [ ] No compatible exercise remains after safety filters.
-- [ ] User skips optional custom notes.
+- [ ] User skips optional known-lift entries.
 - [ ] Provider failure.
 - [ ] Failed plan or workout persistence.
 
@@ -548,13 +555,13 @@ const ERROR_MESSAGES = {
 ### Manual Testing
 
 - [ ] Complete the builder for every experience level.
+- [ ] Validate the v2 request schema for each goal, equipment path, injury list, and optional best-set state.
 - [ ] Generate routines at 2, 3, 4, 5, and 6 days and validate split/recovery behavior.
 - [ ] Verify all session-duration choices stay within exercise-count constraints.
 - [ ] Test each equipment environment and custom equipment selection.
-- [ ] Test knee, shoulder, lumbar, wrist, and elbow restrictions; verify prohibited patterns never appear.
-- [ ] Test a priority muscle and verify extra volume remains below its cap.
-- [ ] Test RIR, RPE, and technical-failure selections.
-- [ ] Exercise plan day selection, replacement, export, and coach-drawer states.
+- [ ] Test injury-zone capture, severity, optional notes, and duplicate-zone rejection.
+- [ ] Verify injury-to-pattern safety behavior after the product approves the mapping (Q1).
+- [ ] Exercise plan day selection and replacement states.
 - [ ] Log, complete, and retry persistence for a workout at mobile and desktop widths.
 - [ ] Simulate slow, failed, malformed, and unsafe AI outputs.
 
@@ -562,18 +569,24 @@ const ERROR_MESSAGES = {
 
 ```json
 {
-  "goals": [{ "type": "hypertrophy", "priority": "primary" }],
-  "injuryHistory": [{ "area": "knee", "severity": "moderate", "restrictedPatterns": ["squat"] }],
-  "daysPerWeek": 4,
-  "sessionDuration": 60,
-  "equipment": ["dumbbells", "cables"],
-  "targetMuscles": ["chest", "back"],
-  "intensityMethod": "rir",
-  "restPreference": "moderate"
+  "version": 2,
+  "goal": "hypertrophy",
+  "experienceLevel": "intermediate",
+  "biometrics": {
+    "age": 30,
+    "heightCm": 175,
+    "bodyweight": 80,
+    "units": "kg"
+  },
+  "injuries": [{ "zone": "knee", "severity": "moderate" }],
+  "availability": { "daysPerWeek": 4, "minutesPerSession": 60 },
+  "equipment": { "preset": "home", "items": ["dumbbells", "cables"] },
+  "preferredSplit": "upper_lower",
+  "knownLifts": { "bench": { "weight": 80, "reps": 5 } }
 }
 ```
 
-Expected: an 8-12 week plan that uses a recovery-aware four-day split, avoids squat-pattern work, includes a rationale, and remains at or below intermediate weekly volume caps.
+Expected: an 8-12 week plan that uses a recovery-aware four-day split, includes a rationale, and remains at or below intermediate weekly volume caps. Injury-to-pattern behavior is blocked on Q1 approval; the contract does not silently treat the proposed mapping as approved.
 
 ---
 
@@ -600,7 +613,7 @@ Expected: an 8-12 week plan that uses a recovery-aware four-day split, avoids sq
 - [ ] Add a typed request and serializable session schema.
 - [ ] Build deterministic safety validators.
 - [ ] Implement workout-plan and planned-session persistence.
-- [ ] Map body-map limitations to the canonical injury/restricted-pattern model.
+- [ ] Resolve TEAM-IMPLEMENTATION-PLAN.md Q1 before enabling injury-to-pattern safety validation; do not infer product approval from the proposed mapping.
 
 ---
 
@@ -611,7 +624,7 @@ Expected: an 8-12 week plan that uses a recovery-aware four-day split, avoids sq
 1. Align prototype wizard inputs with `OnboardingData` and `UserProfile` in `types/index.ts`.
 2. Create strict request/output schemas and deterministic post-generation validators.
 3. Implement protected generation and persistence routes.
-4. Build the five wizard steps and real asynchronous progress state.
+4. Build the nine wizard steps and real asynchronous progress state.
 5. Build dashboard, session-player, and safe-substitution integrations.
 6. Manually verify safety invariants against real Supabase and AI services.
 
@@ -640,12 +653,9 @@ Expected: an 8-12 week plan that uses a recovery-aware four-day split, avoids sq
 
 ## 16. Open Questions
 
-- [ ] Should `strength` become a selectable goal in the UI, since Gym AI types support it but the prototype does not?
-- [ ] Which profile fields store target muscles, split preference, intensity method, rest preference, and custom notes?
 - [ ] What canonical mapping translates each body-map limitation to `restrictedPatterns`?
 - [ ] Should plans create planned sessions immediately or only after explicit user acceptance?
 - [ ] How should an approved `arnold` split be reconciled with recovery and volume constraints?
-- [ ] Are export and coach chat part of the MVP, or should they be independently specified?
 - [ ] Should the active workout player use RIR as the MVP effort field, with RPE hidden per the wireframe brief?
 
 ---
@@ -664,8 +674,9 @@ Expected: an 8-12 week plan that uses a recovery-aware four-day split, avoids sq
 
 | Milestone | Target Date | Status |
 |---|---|---|
-| Specification complete | 2026-09-04 | Done |
-| Schema and safety validators | TBD | Not started |
+| Specification complete | 2026-11-25 | Done |
+| Onboarding contract and schema (RB-01) | 2026-11-25 | Done |
+| Deterministic safety validators | TBD | Not started |
 | Generation API | TBD | Not started |
 | Wizard UI | TBD | Not started |
 | Dashboard and session integration | TBD | Not started |
@@ -679,7 +690,7 @@ Expected: an 8-12 week plan that uses a recovery-aware four-day split, avoids sq
 ### Design Review Notes
 
 - The Kinetic prototype is Spanish-first, desktop-responsive, and uses a dark precision-training visual system.
-- Its core routine flow is a five-step calibration wizard followed by a detailed routine dashboard and workout player.
+- Its five-step flow is visual reference only; Gym AI follows the nine-step onboarding contract in `WIREFRAME-BRIEF.md` §3.1.
 
 ### Development Feedback
 
@@ -697,6 +708,6 @@ Expected: an 8-12 week plan that uses a recovery-aware four-day split, avoids sq
 
 ---
 
-**Last Updated:** 2026-09-04  
+**Last Updated:** 2026-11-25
 **Feature Owner:** Gym AI product team  
 **Status:** Development
