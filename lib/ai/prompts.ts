@@ -7,6 +7,7 @@ import type {
   Injury,
 } from '@/types';
 
+// Substitution (Dev C)
 export function buildSubstitutionPrompt(
   originalExercise: Exercise,
   request: SubstitutionRequest,
@@ -55,6 +56,7 @@ Key principles:
 - Provide clear, actionable guidance with load adjustments
 - Be concise but technically accurate`;
 
+// Routine builder (Dev B)
 /**
  * Routine Builder Prompt
  * Generates a complete workout plan based on onboarding data
@@ -112,6 +114,7 @@ Provide:
 - Natural language rationale explaining the programming decisions`;
 }
 
+// Progress tracking and voice parsing (Dev A)
 /**
  * Voice Parsing Prompt
  * Extracts structured data from voice transcription

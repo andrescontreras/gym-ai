@@ -23,6 +23,7 @@ export const SubstitutionResponseSchema = z.object({
   suggestions: z.array(SubstitutionSuggestionSchema).min(1).max(3),
 });
 
+// Substitution (Dev C)
 export const SubstitutionRequestSchema = z.object({
   originalExercise: z.object({
     id: z.string().min(1),
@@ -47,6 +48,7 @@ export const SubstitutionRequestSchema = z.object({
   voiceInput: z.boolean().optional(),
 });
 
+// Routine builder (Dev B)
 export const WorkoutPlanSchema = z.object({
   name: z.string(),
   durationWeeks: z.number().min(4).max(16),
@@ -65,6 +67,7 @@ export const WorkoutPlanSchema = z.object({
   aiRationale: z.string(),
 });
 
+// Progress tracking and voice parsing (Dev A)
 export const VoiceParsingSchema = z.object({
   reps: z.number().optional(),
   weight: z.number().optional(),

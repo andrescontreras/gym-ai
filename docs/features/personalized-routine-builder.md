@@ -1,6 +1,10 @@
 # Personalized Routine Builder - Specification
 
 > Feature specification based on the Kinetic Routine Wizard prototype at `/Users/oscarepam/Downloads/kinetic-routine-wizard` and the Gym AI safety rules in `docs/DOMAIN-RULES.md`.
+>
+> **Implementation note:** the team plan and `WIREFRAME-BRIEF.md` define the current nine-step
+> onboarding flow; the older prototype flow below is not the MVP contract. The current onboarding
+> page is an unsaved partial preview, not a complete wizard or plan generator.
 
 ---
 

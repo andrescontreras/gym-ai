@@ -1,0 +1,43 @@
+{
+  "eyebrow": "Routine builder preview",
+  "previewNotice": "This preview is in progress. Your answers are not saved and no plan will be generated.",
+  "progress": "Preview step {current} of {total}",
+  "back": "Back",
+  "next": "Continue",
+  "goal": {
+    "title": "What is your primary goal?",
+    "description": "Choose the outcome you want to focus on.",
+    "hypertrophy": "Build muscle",
+    "fat_loss": "Fat loss",
+    "endurance": "Improve endurance"
+  },
+  "experience": {
+    "title": "How experienced are you?",
+    "description": "Your experience determines the maximum weekly sets per muscle group.",
+    "beginner": "Beginner",
+    "intermediate": "Intermediate",
+    "advanced": "Advanced",
+    "cap": "Up to {sets} sets per muscle per week"
+  },
+  "availability": {
+    "title": "When can you train?",
+    "description": "Choose your weekly frequency and session length.",
+    "days": "Training days per week",
+    "dayCount": "{count} days",
+    "duration": "Minutes per session",
+    "minutes": "{count} minutes"
+  },
+  "split": {
+    "title": "Do you prefer a training split?",
+    "description": "Your preference is flexible and will be checked against your schedule and recovery.",
+    "full_body": "Full body",
+    "upper_lower": "Upper / lower",
+    "ppl": "Push / pull / legs",
+    "no_preference": "No preference"
+  },
+  "remaining": {
+    "title": "More steps are coming",
+    "description": "Biometrics, injuries, equipment, lift history, review, and plan generation are not available in this preview.",
+    "restart": "Review your answers"
+  }
+}

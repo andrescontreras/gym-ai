@@ -1,4 +1,6 @@
-// Core Exercise Types
+import type { ZodType } from 'zod';
+
+// Catalog types (Dev C)
 export interface Exercise {
   id: string;
   name: string;
@@ -13,7 +15,27 @@ export interface Exercise {
   biomechanicalTags?: string[]; // E.g., 'unilateral', 'compound', 'isolation'
 }
 
-// Session & Workout Types
+export type EquipmentType =
+  | 'full_gym'
+  | 'dumbbells'
+  | 'barbell'
+  | 'kettlebells'
+  | 'resistance_bands'
+  | 'bodyweight'
+  | 'machines'
+  | 'cables';
+
+export type MovementPattern =
+  | 'push_horizontal'
+  | 'push_vertical'
+  | 'pull_horizontal'
+  | 'pull_vertical'
+  | 'squat'
+  | 'hinge'
+  | 'lunge'
+  | 'carry';
+
+// Session and tracking types (Dev A)
 export interface WorkoutSession {
   id: string;
   userId: string;
@@ -50,7 +72,7 @@ export interface SetLog {
   timestamp: string;
 }
 
-// AI Substitution Types
+// Substitution types (Dev C)
 export interface SubstitutionRequest {
   exerciseId: string;
   reason: string; // NLP input from user (voice or text)
@@ -76,7 +98,7 @@ export interface SubstitutionResponse {
   processingTime: number;
 }
 
-// Volume Tracking & Progress Types
+// Progress and tracking types (Dev A)
 export interface VolumeCalculation {
   exerciseId: string;
   exerciseName: string;
@@ -124,7 +146,7 @@ export interface PredictiveLoad {
   confidenceScore: number; // 0-1
 }
 
-// Voice Input & NLP Types
+// Predictive load and voice types (Dev A)
 export interface VoiceTrackingInput {
   audioBlob?: Blob; // Raw audio for transcription
   transcription?: string; // Pre-transcribed text
@@ -141,7 +163,35 @@ export interface ParsedTrackingData {
   rawInput: string;
 }
 
-// Routine Builder AI Request/Response Types
+// Routine builder AI request/response types (Dev B)
+export type AIGenerationFallbackReason =
+  | 'missing_api_key'
+  | 'provider_error'
+  | 'timeout'
+  | 'invalid_output';
+
+export type AIGenerationResult<T> =
+  | { status: 'generated'; object: T }
+  | {
+      status: 'fallback';
+      object: T;
+      reason: AIGenerationFallbackReason;
+    }
+  | {
+      status: 'fallback_unavailable';
+      reason: AIGenerationFallbackReason;
+    };
+
+export interface GenerateValidatedObjectOptions<T> {
+  modelId: string;
+  schema: ZodType<T>;
+  prompt: string;
+  instructions: string;
+  clarifiedPrompt: string;
+  timeoutMs: number;
+  fallback?: () => T | Promise<T>;
+}
+
 export interface RoutineBuilderRequest {
   userId: string;
   onboardingData: OnboardingData;
@@ -155,7 +205,7 @@ export interface RoutineBuilderResponse {
   progressionNotes: string; // How to progress through the plan
 }
 
-// User Profile Types
+// Profile types (Dev A)
 export interface UserProfile {
   id: string;
   email: string;
@@ -171,6 +221,15 @@ export interface UserProfile {
   createdAt: string;
 }
 
+// Onboarding profile types (Dev B)
+export interface OnboardingPreviewAnswers {
+  goal: 'hypertrophy' | 'fat_loss' | 'endurance' | null;
+  experience: 'beginner' | 'intermediate' | 'advanced' | null;
+  daysPerWeek: number | null;
+  sessionDuration: number | null;
+  preferredSplit: 'full_body' | 'upper_lower' | 'ppl' | 'no_preference' | null;
+}
+
 export interface Injury {
   area: string; // E.g., 'lower_back', 'knee', 'shoulder'
   type?: string; // E.g., 'tendinitis', 'strain', 'chronic_pain'
@@ -184,7 +243,6 @@ export interface Goal {
   priority: 'primary' | 'secondary';
 }
 
-// Onboarding & Routine Builder Types
 export interface OnboardingData {
   goals: Goal[];
   injuryHistory: Injury[];
@@ -194,27 +252,7 @@ export interface OnboardingData {
   completedAt: string;
 }
 
-export type EquipmentType =
-  | 'full_gym'
-  | 'dumbbells'
-  | 'barbell'
-  | 'kettlebells'
-  | 'resistance_bands'
-  | 'bodyweight'
-  | 'machines'
-  | 'cables';
-
-export type MovementPattern =
-  | 'push_horizontal'
-  | 'push_vertical'
-  | 'pull_horizontal'
-  | 'pull_vertical'
-  | 'squat'
-  | 'hinge'
-  | 'lunge'
-  | 'carry';
-
-// Routine Builder Output
+// Routine builder plan types (Dev B)
 export interface WorkoutPlan {
   id: string;
   userId: string;
@@ -242,7 +280,7 @@ export interface VolumeProfile {
   progressionStrategy: 'linear' | 'undulating' | 'block';
 }
 
-// Database Types (for Supabase)
+// Database types (Dev C)
 export interface Database {
   public: {
     Tables: {

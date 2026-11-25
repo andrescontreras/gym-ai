@@ -1,5 +1,6 @@
-import { createAnthropic } from '@ai-sdk/anthropic';
 import { generateObject, generateText } from 'ai';
+import { AI_MODEL_IDS, AI_TIMEOUT_MS, getAnthropicProvider } from './config';
+import { generateValidatedObject } from './generate-validated-object';
 import type {
   RoutineBuilderRequest,
   RoutineBuilderResponse,
@@ -24,10 +25,7 @@ import {
   VoiceParsingSchema,
 } from './schemas';
 
-const anthropic = createAnthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY!,
-});
-
+// Routine builder (Dev B)
 /**
  * AI Service: Routine Builder
  * Generates a personalized workout plan based on user onboarding data
@@ -38,10 +36,11 @@ export async function generateWorkoutPlan(
   const prompt = buildRoutineBuilderPrompt(request);
 
   const { object: plan } = await generateObject({
-    model: anthropic('claude-3-5-sonnet-20241022'),
+    model: getAnthropicProvider()(AI_MODEL_IDS.reasoning),
     schema: WorkoutPlanSchema,
     prompt,
-    system: SYSTEM_PROMPT,
+    instructions: SYSTEM_PROMPT,
+    abortSignal: AbortSignal.timeout(AI_TIMEOUT_MS.reasoning),
   });
 
   return {
@@ -61,6 +60,7 @@ export async function generateWorkoutPlan(
   };
 }
 
+// Substitution (Dev C)
 /**
  * AI Service: Exercise Substitution
  * Provides biomechanically equivalent alternatives in real-time
@@ -73,12 +73,20 @@ export async function generateExerciseSubstitution(
   const startTime = Date.now();
   const prompt = buildSubstitutionPrompt(originalExercise, request, userProfile);
 
-  const { object: response } = await generateObject({
-    model: anthropic('claude-3-5-sonnet-20241022'),
+  const result = await generateValidatedObject({
+    modelId: AI_MODEL_IDS.reasoning,
     schema: SubstitutionResponseSchema,
     prompt,
-    system: SYSTEM_PROMPT,
+    instructions: SYSTEM_PROMPT,
+    clarifiedPrompt: `${prompt}\n\nReturn only substitutions that strictly match the required schema and movement pattern.`,
+    timeoutMs: AI_TIMEOUT_MS.reasoning,
   });
+
+  if (result.status === 'fallback_unavailable') {
+    throw new Error(`No safe substitution fallback is available (${result.reason}).`);
+  }
+
+  const response = result.object;
 
   const validSuggestions = response.suggestions.filter(
     (suggestion) =>
@@ -105,6 +113,7 @@ export async function generateExerciseSubstitution(
   };
 }
 
+// Progress tracking and voice parsing (Dev A)
 /**
  * AI Service: Voice Input Parser
  * Extracts structured tracking data from natural language voice input
@@ -116,10 +125,10 @@ export async function parseVoiceTrackingInput(
   const prompt = buildVoiceParsingPrompt(transcription, input.exerciseContext);
 
   const { object: parsed } = await generateObject({
-    model: anthropic('claude-3-5-haiku-20241022'), // Use Haiku for speed
+    model: getAnthropicProvider()(AI_MODEL_IDS.parsing),
     schema: VoiceParsingSchema,
     prompt,
-    system:
+    instructions:
       'You are a voice input parser for a gym tracking app. Extract reps, weight, and effort metrics from natural language.',
   });
 
@@ -150,9 +159,10 @@ Consider:
 Provide a brief rationale.`;
 
   const { text } = await generateText({
-    model: anthropic('claude-3-5-haiku-20241022'),
+    model: getAnthropicProvider()(AI_MODEL_IDS.parsing),
     prompt,
-    system: 'You are an expert strength coach providing progressive overload recommendations.',
+    instructions: 'You are an expert strength coach providing progressive overload recommendations.',
+    timeout: AI_TIMEOUT_MS.predictLoad,
   });
 
   // Parse the response (simplified - in production, use structured output)

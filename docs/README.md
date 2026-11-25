@@ -112,7 +112,7 @@ Owners and order of work are defined in [TEAM-IMPLEMENTATION-PLAN.md](TEAM-IMPLE
 |---------|-------|-----------|
 | **User Authentication & Management** | Dev A (1st) | `features/user-authentication.md` + `features/user-authentication-plan.md` |
 | **Progress Tracking** | Dev A (2nd) | `features/progress-tracking.md` |
-| **Personalized Routine Builder** | Dev B | `features/personalized-routine-builder.md` |
+| **Personalized Routine Builder** | Dev B | `features/personalized-routine-builder.md` + `features/personalized-routine-builder-plan.md` |
 | **Exercise Catalog** | Dev C (1st) | Team plan §10 (no separate spec yet) |
 | **Intelligent Exercise Substitution** | Dev C (2nd) | `features/intelligent-exercise-substitution.md` |
 

@@ -1,0 +1,43 @@
+{
+  "eyebrow": "Vista previa del creador de rutinas",
+  "previewNotice": "Esta vista previa está en desarrollo. Tus respuestas no se guardan y no se generará ningún plan.",
+  "progress": "Paso de vista previa {current} de {total}",
+  "back": "Atrás",
+  "next": "Continuar",
+  "goal": {
+    "title": "¿Cuál es tu objetivo principal?",
+    "description": "Elige el resultado en el que quieres enfocarte.",
+    "hypertrophy": "Ganar músculo",
+    "fat_loss": "Perder grasa",
+    "endurance": "Mejorar la resistencia"
+  },
+  "experience": {
+    "title": "¿Cuál es tu nivel de experiencia?",
+    "description": "Tu experiencia determina el máximo de series semanales por grupo muscular.",
+    "beginner": "Principiante",
+    "intermediate": "Intermedio",
+    "advanced": "Avanzado",
+    "cap": "Hasta {sets} series por músculo a la semana"
+  },
+  "availability": {
+    "title": "¿Cuándo puedes entrenar?",
+    "description": "Elige tu frecuencia semanal y la duración de cada sesión.",
+    "days": "Días de entrenamiento por semana",
+    "dayCount": "{count} días",
+    "duration": "Minutos por sesión",
+    "minutes": "{count} minutos"
+  },
+  "split": {
+    "title": "¿Prefieres una distribución de entrenamiento?",
+    "description": "Tu preferencia es flexible y se evaluará según tu horario y recuperación.",
+    "full_body": "Cuerpo completo",
+    "upper_lower": "Tren superior / inferior",
+    "ppl": "Empuje / tirón / piernas",
+    "no_preference": "Sin preferencia"
+  },
+  "remaining": {
+    "title": "Pronto habrá más pasos",
+    "description": "Los datos biométricos, lesiones, equipo, historial de levantamientos, revisión y generación del plan aún no están disponibles en esta vista previa.",
+    "restart": "Revisar tus respuestas"
+  }
+}
