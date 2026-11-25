@@ -251,7 +251,7 @@ waits on another feature: you build against the stand-in and switch at the miles
 
 | Seam | Provider → consumers | Contract (frozen at G0) | Stand-in until merged | Real version lands in |
 |---|---|---|---|---|
-| **S1 Authenticated user** | A → B, C | `requireUser()` / `getCurrentUser()` in `lib/supabase/auth.ts`, the `AuthUser` type, the protected-route list in `proxy.ts`, the route map (§5.1) | The demo user from the dev seed, signed in through Supabase Studio or a temporary script | AUTH-06 (M1) |
+| **S1 Authenticated user** | A → B, C | `getCurrentUser()` (route handlers: `null` → 401) and `requireUser()` (pages: redirects to login) in `lib/supabase/auth.ts`, the `AuthUser` type, the protected-route list in `proxy.ts`, the route map (§5.1) | The demo user from the dev seed, signed in through Supabase Studio or a temporary script | Auth session A4 (M1) |
 | **S2 Exercise catalog** | C → B, A | `Exercise` type, canonical vocabularies (equipment, movement patterns including the isolation classification, injury zone → restricted patterns), and the `getCandidateExercises(filters)` / `getExerciseById(id)` signatures | The current 53-exercise seed, with the queries implemented in S0-C2 against current data | CAT-04 (M1) |
 | **S3 Plan → planned sessions** | B → A | `WorkoutPlan` / `Microcycle` / planned-session Zod schema, and how a plan becomes `workout_sessions` + `session_exercises` rows (`create_plan_with_sessions`). `getCurrentMicrocycle(planId, date)` signature, so deload weeks can be detected | Plan and planned sessions in the dev seed | RB-02, RB-06 (M2) |
 | **S4 Session runtime** | A → C, B | Session-table schema (S0-J1), the `SessionExercise` domain type, the `SubstitutionSlot` props (below), and the `409 EXERCISE_MISMATCH` rule in `log_set` | Active session in the dev seed. C develops the panel on a scratch page (not committed), against that session | PT-04 (M2) |
@@ -313,7 +313,7 @@ not be treated as a missing week. Its current body throws until RB-02.
 `isOnboardingComplete(profile: UserProfile): boolean` also throws until RB-04; RB-01 must settle
 completion and persistence semantics first. No demo-user exception is implemented here.
 
-**Provisional seed and RB-02 mapping, pending S0-J1 review:**
+**Seed and RB-02 mapping (S0-J1 settled the open points in §5.4, which wins where they differ):**
 
 | Source | Destination |
 |---|---|
@@ -339,6 +339,33 @@ a toggle callback, or heatmap mode with values keyed by zone ID. Zone names rema
 S0-C3 approval; heatmap units and color scale are consumer presentation decisions.
 `VolumeVsCapChartProps` takes `WeeklyVolume`, the experience cap range, and `isDeloadWeek`;
 the bars and caps count sets, not tonnage. Components arrive in RB-05/RB-09.
+
+### 5.4 Session tables (S0-J1)
+
+Migration `20261126000000_session_tables_baseline.sql`. The database enforces everything below, so
+a consumer that breaks a rule gets an error, not bad data. Positions and slot numbers are all
+**1-based**, which is what `jsonb_array_elements(...) with ordinality` returns.
+
+| Concern | Rule |
+|---|---|
+| Status lifecycle | `planned` → `active` → `completed`. `planned`: `started_at` and `completed_at` are null. `active`: `started_at` set. `completed`: both set, `completed_at >= started_at`. No other status exists |
+| One active session | A partial unique index allows one `active` row per user. A's `start_session` turns the violation into a clean error; nobody else sets `active` |
+| Exercise order | `session_exercises.position`: required, `>= 1`, unique within the session. Substituting keeps it. Never rely on insertion order or `id` |
+| Prescribed vs. logged | `session_exercises.{sets,reps,weight,rir}` is the **prescription**. What happened is in `set_logs` (`weight_used`). Neither overwrites the other |
+| Unknown starting load | `session_exercises.weight` is nullable. `NULL` means unknown, never `0`. `log_set` still records the real load. The UI asks the user for one |
+| Units | Every stored weight is **kg** (dumbbells per hand), including `PlannedExercise.weight` in `microcycles` and `set_logs.weight_used`. The profile's `units` only changes display (conversion in `lib/training/units.ts`, PT-01) |
+| Link to the plan | `workout_sessions.plan_week_number` (the microcycle's `weekNumber`) and `plan_session_number` (index in `sessions`), `session_exercises.plan_exercise_number` (index in `exercises`). Rationales: `microcycles -> (plan_week_number - 1) -> 'sessions' -> (plan_session_number - 1) -> 'rationale'`, and the same one level down for exercises. All three are null for sessions not generated from a plan. A plan slot becomes at most one session row, so `create_plan_with_sessions` can use `on conflict do nothing` to be safely retried |
+| Substitution | `substituted_from` (original exercise) is set together with `substituted_at` and `original_reps`, or all three are null. `original_weight` (kg, null if it was unknown) and `substitution_rationale` are optional. C's swap RPC writes them; `undo_substitution` restores `exercise_id`, `reps` and `weight` from them and clears all five |
+| `updated_at` | Updated by a trigger on `workout_sessions` |
+
+**RB-02 mapping.** Each planned session becomes one `workout_sessions` row with `status = 'planned'`,
+`plan_week_number = weekNumber`, `plan_session_number = ordinality` and null timestamps. Each planned
+exercise becomes one `session_exercises` row with `position = plan_exercise_number = ordinality`
+and `weight` copied as-is, including `null`.
+
+Not decided here, left to the owner: what a second substitution of the same row stores
+(recommended: keep the first `substituted_from` and `original_*`, so the label always names the
+prescribed exercise), and the `SessionExercise` domain type's `weight: number | null` (S0-J5).
 
 ---
 
@@ -566,17 +593,17 @@ chart), S6 (onboarding status).
 
 ### Feature 1: User Authentication
 
-The detailed cards **AUTH-01 to AUTH-13** are in `docs/features/user-authentication-plan.md` and
-are not repeated here. Build them in that order, which is also the priority order:
+The work is in `docs/features/user-authentication-plan.md`, written as **13 AI sessions (A1–A13)**
+with a model, a file allowlist and ready-made checks for each one. It's not repeated here. Run the
+sessions in order:
 
-| Group | Cards | Why this order |
+| Group | Sessions | Why this order |
 |---|---|---|
-| **Auth core** (unblocks S1 and M1) | AUTH-01 dependencies · AUTH-02 auth section of `config.jsonc` · AUTH-03 profile trigger + `updated_at` + `units` migration · AUTH-04 `proxy.ts` · AUTH-05 contracts · AUTH-06 API hardening + `requireUser()` · AUTH-07 `AuthContext` fix · AUTH-09 login and signup pages | Others switch from the seed user to real accounts as soon as this lands |
-| **Auth complete** | AUTH-08 building blocks · AUTH-09 reset-password pages · AUTH-10 profile and logout · AUTH-11 edge cases · AUTH-12 verification · AUTH-13 docs | Not on anyone else's path |
+| **Auth core** (unblocks S1 and M1) | A1 contracts (also S0-J4) · A2 dependencies and local auth config · A3 profile trigger migration · A4 `proxy.ts` and `getCurrentUser()` / `requireUser()` · A5 core API routes · A6 `AuthContext` fix · A7 UI building blocks · A8 login and signup pages | Others switch from the seed user to real accounts as soon as this lands |
+| **Auth complete** | A9 password reset · A10 profile and logout · A11 edge cases · A12 verification · A13 docs | Not on anyone else's path |
 
-**Feature 1 done when:** the spec §13 manual checklist passes in the browser in EN and ES,
-including the open-redirect checks in AUTH-12, and `/api/ai/substitute`, `/api/routines/*` and
-`/api/sessions/*` all call `requireUser()`.
+**Feature 1 done when:** session A12's checks all pass (the spec §13 checklist in EN and ES,
+including the open-redirect checks), and B and C have been told that seam S1 is live.
 
 ### Feature 2: Progress Tracking
 
@@ -706,7 +733,7 @@ screens 3–19, `DOMAIN-RULES.md` §1–§2 and §6. Reference designs: `docs/fe
 
 **RB-06: Routine generation API (L, safety-critical)**
 - `POST /api/routines/generate`. The handler:
-  1. checks auth (`requireUser()`, S1) and validates the input with Zod
+  1. checks auth (`getCurrentUser()`, S1) and validates the input with Zod
   2. loads the profile server-side as the authoritative context
   3. gets candidate exercises from C's `getCandidateExercises`, filtered by equipment and
      injuries
@@ -811,7 +838,7 @@ grows, write `docs/features/exercise-catalog.md` from `FEATURE_TEMPLATE.md`.
 - Complete the §14.1 rows.
 
 **SUB-03: Substitution backend hardening (L, safety-critical)**
-- `/api/ai/substitute`: `requireUser()` (S1, fixes D9), loads the profile and injuries
+- `/api/ai/substitute`: `getCurrentUser()` (S1, fixes D9), loads the profile and injuries
   server-side.
 - Candidates come from `getCandidateExercises`, so suggestions carry canonical exercise IDs, never
   AI-generated ones.
@@ -940,7 +967,7 @@ Approximate working day each track finishes, with no levers applied:
 
 | Track | Ends around |
 |---|---|
-| A: Sprint 0 → Auth core → Auth complete | day 4 → day 13 → day 20 |
+| A: Sprint 0 → Auth core → Auth complete | day 4 → day 14 → day 20 |
 | A: PT-01 to PT-05 (needed for M2) → PT-06 to PT-10 | day 28 → day 36 |
 | B: RB-01 to RB-08 (needed for M2) → RB-09 to RB-11 | day 19 → day 24 |
 | C: Catalog (CAT-04, which B needs, around day 11) → Substitution | day 12 → day 22½ |
@@ -955,17 +982,17 @@ G0 ─► C: CAT-04 ─► B: RB-06 generation ─► RB-08 ──────�
 around day 22, while M2 waits on A until about day 28. Protect A's time:
 
 - Dev A reviews within the day but takes no other work until PT-04 is merged.
-- B and C never wait on auth: they use the seed user until AUTH-06 lands.
+- B and C never wait on auth: they use the seed user until auth session A4 lands.
 - C builds the whole substitution UI on a scratch page, so SUB-06 is a small wiring job.
 - B owns the shared assets A needs later (S5), so PT-08 is assembly, not new component work.
 
 ### 12.3 The one exception to "one feature at a time"
 
-When Auth core is merged, Dev A may **park "Auth complete"** (AUTH-08, the reset-password half of
-AUTH-09, AUTH-10, AUTH-11, AUTH-12, AUTH-13) and start Progress Tracking, then return to it before
-M3. Nobody else depends on those cards.
+When Auth core is merged, Dev A may **park "Auth complete"** (sessions A9–A13: password reset,
+profile page, edge cases, verification, docs) and start Progress Tracking, then return to it
+before M3. Nobody else depends on those sessions.
 
-On the estimates above this moves M2 from about day 28 to about day 21, so the plan-to-session
+On the estimates above this moves M2 from about day 28 to about day 22, so the plan-to-session
 integration is tested a week earlier. It doesn't change A's total, so M3 doesn't move. Decide at
 the end of Auth core, and record the decision here.
 
@@ -1011,7 +1038,12 @@ npm run dev                   # http://localhost:3000
   migrations.
 - Verified in S0-C1 with Supabase CLI 3.4.0 and Docker 29.9: all three migrations apply on
   `db reset` and the catalog seed loads 53 exercises across all 8 patterns. Studio runs at
-  `http://127.0.0.1:54323`. `supabase/seed.sql` arrives in S0-C4.
+  `http://127.0.0.1:54323`.
+- Dev seed (S0-C4): login `demo@gym-ai.local` / `DemoLifter123!` (local only). Dates are relative
+  to the day of `db reset`: a two-week upper/lower plan starts that day, with today's Upper A
+  `active` and two bench sets logged. Three weeks of history precede it, and the middle week is
+  untrained. Re-run `db reset` on another day to move "today". Session rows are provisional
+  until S0-J1 (§5.3).
 - Open Docker Desktop once after installing it. Until its first launch completes, the `docker`
   CLI isn't on `PATH` and `supabase start` fails.
 - `supabase start` prints local-only demo keys. Copy `API_URL` and `ANON_KEY` into `.env.local`.
@@ -1101,6 +1133,10 @@ Finish with a short summary: files changed, verification done, open questions.
 
 Tips:
 
+- `docs/features/user-authentication-plan.md` §0–§1 is the reference format for running a feature
+  as a series of cheap, self-contained sessions: model and effort per session, a file allowlist,
+  verified facts written down once, ready-made checks, a two-strike stop rule and a short session
+  log. B and C can copy that structure for their features.
 - One card per session. Start a new session for the next card. Context from earlier cards should
   live in the repo (code and docs), not in chat history.
 - On L-sized cards, ask the agent for a short plan before it edits anything.

@@ -208,11 +208,11 @@ export interface SubstitutionResponse {
   processingTime: number;
 }
 
-// Auth and profile types (Dev A)
+// ===== Auth/Profile =====
 export interface UserProfile {
   id: string;
   email: string;
-  name: string;
+  name: string | null;
   experienceLevel: 'beginner' | 'intermediate' | 'advanced';
   injuries?: Injury[];
   preferences?: {
@@ -221,8 +221,54 @@ export interface UserProfile {
     goals?: Goal[];
   };
   onboarding?: OnboardingData;
+  units: 'kg' | 'lb';
   createdAt: string;
+  updatedAt: string;
 }
+
+export type AuthErrorCode =
+  | 'INVALID_CREDENTIALS' | 'EMAIL_EXISTS' | 'WEAK_PASSWORD' | 'INVALID_EMAIL'
+  | 'PASSWORDS_DONT_MATCH' | 'INVALID_NAME' | 'SAME_PASSWORD' | 'INVALID_RESET_TOKEN'
+  | 'RATE_LIMIT_EXCEEDED' | 'SESSION_EXPIRED' | 'UNAUTHORIZED'
+  | 'NETWORK_ERROR' | 'SERVER_ERROR' | 'UNKNOWN_ERROR';
+
+export interface AuthErrorResponse {
+  error: string;
+  code: AuthErrorCode;
+}
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string | null;
+  createdAt: string;
+  emailVerified: boolean;
+}
+
+export interface AuthSuccessResponse {
+  success: true;
+  user: AuthUser;
+}
+
+export interface SignupRequest {
+  email: string;
+  password: string;
+  name?: string;
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface ResetPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordConfirmRequest {
+  password: string;
+}
+// ===== End Auth/Profile =====
 
 // Onboarding and plan types (Dev B)
 export interface Injury {
@@ -384,7 +430,9 @@ type UserProfileRow = {
   injuries: Injury[] | null;
   preferences: UserProfile['preferences'] | null;
   onboarding: OnboardingData | null;
+  units: UserProfile['units'];
   created_at: string;
+  updated_at: string;
 };
 
 type WorkoutPlanRow = {
@@ -407,6 +455,10 @@ type WorkoutSessionRow = {
   date: string;
   name: string;
   status: WorkoutSession['status'];
+  started_at: string | null;
+  completed_at: string | null;
+  plan_week_number: number | null;
+  plan_session_number: number | null;
   created_at: string;
   updated_at: string;
 };
@@ -415,15 +467,21 @@ type SessionExerciseRow = {
   id: string;
   session_id: string;
   exercise_id: string | null;
+  position: number;
+  plan_exercise_number: number | null;
   sets: number;
   reps: number;
-  weight: number;
+  weight: number | null;
   rir: number;
   rpe: number | null;
   rest_seconds: number;
   notes: string | null;
   completed: boolean;
   substituted_from: string | null;
+  substituted_at: string | null;
+  substitution_rationale: string | null;
+  original_reps: number | null;
+  original_weight: number | null;
 };
 
 type SetLogRow = {
@@ -453,7 +511,7 @@ export interface Database {
       workout_sessions: TableDefinition<WorkoutSessionRow, 'user_id' | 'date' | 'name'>;
       session_exercises: TableDefinition<
         SessionExerciseRow,
-        'session_id' | 'sets' | 'reps' | 'weight' | 'rir'
+        'session_id' | 'position' | 'sets' | 'reps' | 'weight' | 'rir'
       >;
       set_logs: TableDefinition<
         SetLogRow,

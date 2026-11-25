@@ -7,12 +7,14 @@ export function mapUserProfileRow(row: TableRow<'user_profiles'>): UserProfile {
   return {
     id: row.id,
     email: row.email,
-    name: row.name ?? '',
+    name: row.name,
     experienceLevel: row.experience_level,
     injuries: row.injuries ?? [],
     preferences: row.preferences ?? undefined,
     onboarding: row.onboarding ?? undefined,
+    units: row.units,
     createdAt: row.created_at,
+    updatedAt: row.updated_at,
   };
 }
 
