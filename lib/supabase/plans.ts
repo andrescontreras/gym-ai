@@ -1,9 +1,126 @@
-import type { Microcycle } from '@/types';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { z } from 'zod';
+import { MicrocycleSchema, WorkoutPlanSchema } from '@/lib/ai/schemas';
+import { createClient } from '@/lib/supabase/server';
+import type { Database, Microcycle, TableRow, WorkoutPlan } from '@/types';
 
-// S3 seam; persistence and date lookup land in RB-02.
+// S3 seam; transactional creation waits for the S0-J1 session schema.
+function mapWorkoutPlanRow(row: TableRow<'workout_plans'>): WorkoutPlan {
+  const parsedPlan = WorkoutPlanSchema.safeParse({
+    name: row.name,
+    durationWeeks: row.duration_weeks,
+    microcycles: row.microcycles,
+    volumeProfile: row.volume_profile,
+    aiRationale: row.ai_rationale,
+  });
+
+  if (!parsedPlan.success) {
+    throw new Error('Stored workout plan does not match the plan contract', {
+      cause: parsedPlan.error,
+    });
+  }
+
+  return {
+    id: row.id,
+    userId: row.user_id,
+    ...parsedPlan.data,
+    goals: row.goals,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+export async function getPlans(
+  supabase: SupabaseClient<Database>,
+  userId: string
+): Promise<WorkoutPlan[]> {
+  const { data, error } = await supabase
+    .from('workout_plans')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching workout plans:', error.message);
+    throw new Error('Failed to fetch workout plans', { cause: error });
+  }
+
+  return data.map(mapWorkoutPlanRow);
+}
+
+export async function getPlan(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  planId: string
+): Promise<WorkoutPlan | null> {
+  const { data, error } = await supabase
+    .from('workout_plans')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('id', planId)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error fetching workout plan:', error.message);
+    throw new Error('Failed to fetch workout plan', { cause: error });
+  }
+
+  return data ? mapWorkoutPlanRow(data) : null;
+}
+
 export async function getCurrentMicrocycle(
-  _planId: string,
-  _date: string
+  planId: string,
+  date: string
 ): Promise<Microcycle | null> {
-  throw new Error('Not implemented');
+  if (!z.iso.date().safeParse(date).success) {
+    throw new Error('Date must be a calendar date in YYYY-MM-DD format');
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError) {
+    console.error('Error authenticating workout plan lookup:', authError.message);
+    throw new Error('Failed to authenticate workout plan lookup', { cause: authError });
+  }
+
+  if (!user) {
+    throw new Error('Authentication required to look up a workout plan');
+  }
+
+  const { data, error } = await supabase
+    .from('workout_plans')
+    .select('microcycles')
+    .eq('user_id', user.id)
+    .eq('id', planId)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error fetching workout plan microcycles:', error.message);
+    throw new Error('Failed to fetch workout plan microcycles', { cause: error });
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  const parsedMicrocycles = z.array(MicrocycleSchema).safeParse(data.microcycles);
+
+  if (!parsedMicrocycles.success) {
+    throw new Error('Stored workout plan microcycles do not match the plan contract', {
+      cause: parsedMicrocycles.error,
+    });
+  }
+
+  return (
+    parsedMicrocycles.data.find((microcycle) => {
+      const startDate = microcycle.startDate;
+      const endDate = new Date(`${startDate}T00:00:00.000Z`);
+      endDate.setUTCDate(endDate.getUTCDate() + 7);
+      return date >= startDate && date < endDate.toISOString().slice(0, 10);
+    }) ?? null
+  );
 }
