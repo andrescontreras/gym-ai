@@ -103,7 +103,7 @@ Verified on 2026-11-25 by reading the code and running `npx tsc --noEmit` (11 er
 ### Missing
 
 Login, signup and password-reset pages · onboarding wizard · Program UI · i18n · charts · local
-Supabase config (`supabase/config.toml`) · dev seed · CI.
+Supabase config (`supabase/config.jsonc`) · dev seed · CI.
 
 ### Known defects
 
@@ -200,7 +200,7 @@ The owner must approve any PR that touches these paths.
 | **AI plumbing:** `lib/ai/config.ts` and the shared validated-generation wrapper | B |
 | **Exercise Catalog:** `app/api/exercises/**`, `components/exercise/**`, `hooks/useExercises.ts`, `lib/supabase/exercises.ts` | C |
 | **Substitution:** `app/api/ai/substitute/**`, `app/api/substitutions/**`, `components/substitution/**`, `lib/supabase/substitution.ts`, `lib/training/{load-translation,substitution-filters}.ts`, `messages/*/substitution.json` | C |
-| **Database plumbing:** `supabase/config.toml`, `supabase/seed.sql`, the `Database` section of `types/index.ts`, `lib/supabase/{client,server}.ts` | C |
+| **Database plumbing:** `supabase/config.jsonc`, `supabase/seed.sql`, the `Database` section of `types/index.ts`, `lib/supabase/{client,server}.ts` | C |
 | **Shared, sectioned files** (§6.3): `types/index.ts`, `lib/constants.ts`, `lib/ai/prompts.ts`, `lib/ai/schemas.ts`, `lib/ai/service.ts`, `package.json` | Each owner edits only their section |
 | `AGENTS.md`, `CLAUDE.md`, `docs/**` | Shared. Your own feature spec is yours |
 
@@ -252,7 +252,7 @@ waits on another feature: you build against the stand-in and switch at the miles
 | Seam | Provider → consumers | Contract (frozen at G0) | Stand-in until merged | Real version lands in |
 |---|---|---|---|---|
 | **S1 Authenticated user** | A → B, C | `getCurrentUser()` (route handlers: `null` → 401) and `requireUser()` (pages: redirects to login) in `lib/supabase/auth.ts`, the `AuthUser` type, the protected-route list in `proxy.ts`, the route map (§5.1) | The demo user from the dev seed, signed in through Supabase Studio or a temporary script | Auth session A4 (M1) |
-| **S2 Exercise catalog** | C → B, A | `Exercise` type, canonical vocabularies (equipment, movement patterns including the isolation classification, injury zone → restricted patterns), and the `getCandidateExercises(filters)` / `getExerciseById(id)` signatures | The current 56-exercise seed, with the queries implemented in S0-C2 against current data | CAT-04 (M1) |
+| **S2 Exercise catalog** | C → B, A | `Exercise` type, canonical vocabularies (equipment, movement patterns including the isolation classification, injury zone → restricted patterns), and the `getCandidateExercises(filters)` / `getExerciseById(id)` signatures | The current 53-exercise seed, with the queries implemented in S0-C2 against current data | CAT-04 (M1) |
 | **S3 Plan → planned sessions** | B → A | `WorkoutPlan` / `Microcycle` / planned-session Zod schema, and how a plan becomes `workout_sessions` + `session_exercises` rows (`create_plan_with_sessions`). `getCurrentMicrocycle(planId, date)` signature, so deload weeks can be detected | Plan and planned sessions in the dev seed | RB-02, RB-06 (M2) |
 | **S4 Session runtime** | A → C, B | Session-table schema (S0-J1), the `SessionExercise` domain type, the `SubstitutionSlot` props (below), and the `409 EXERCISE_MISMATCH` rule in `log_set` | Active session in the dev seed. C develops the panel on a scratch page (not committed), against that session | PT-04 (M2) |
 | **S5 Shared UI assets** | B → A | `<BodyMap>` (front and back silhouette, about 10 zones) and `<VolumeVsCapChart>` component props | Placeholder boxes | RB-05, RB-09 |
@@ -429,7 +429,7 @@ for its feature track.
 ### Dev C: database and catalog groundwork
 
 **S0-C1: Set up local Supabase (M)**
-- `npx supabase init` (creates `supabase/config.toml`), `npx supabase start`,
+- `npx supabase init` (creates `supabase/config.jsonc` with CLI 3.x), `npx supabase start`,
   `npx supabase db reset`. All three existing migrations must apply cleanly.
 - Requires Docker. Update the "No Docker required" line in `AGENTS.md`.
 - Write the exact steps into §13 if they differ.
@@ -960,7 +960,13 @@ npm run dev                   # http://localhost:3000
   or logs.
 - Only Dev C points a local checkout at the **hosted** project, and only to apply approved
   migrations.
-- Dev C confirms these commands in S0-C1 and S0-C4, and corrects this section if they differ.
+- Verified in S0-C1 with Supabase CLI 3.4.0 and Docker 29.9: all three migrations apply on
+  `db reset` and the catalog seed loads 53 exercises across all 8 patterns. Studio runs at
+  `http://127.0.0.1:54323`. `supabase/seed.sql` arrives in S0-C4.
+- Open Docker Desktop once after installing it. Until its first launch completes, the `docker`
+  CLI isn't on `PATH` and `supabase start` fails.
+- `supabase start` prints local-only demo keys. Copy `API_URL` and `ANON_KEY` into `.env.local`.
+  They aren't secrets, but keep hosted keys out of chat, PRs and logs.
 
 ---
 
