@@ -109,8 +109,9 @@ Create a workout plan (mesocycle) that:
 
 Provide:
 - Plan duration (8-12 weeks recommended for hypertrophy)
-- Weekly microcycle breakdown with focus per week
-- Day-by-day session structure (exercises, sets, reps, rest)
+- Weekly microcycles with a startDate (YYYY-MM-DD), focus (accumulation, intensification, or deload), and rationale
+- Dated sessions with a name and rationale; each exercise has a catalog UUID, sets, reps, weight, RIR, restSeconds, and rationale
+- Use null for weight when a starting load is unknown; do not invent exercise IDs
 - Volume distribution per muscle group
 - Natural language rationale explaining the programming decisions`;
 }
