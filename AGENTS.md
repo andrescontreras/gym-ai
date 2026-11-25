@@ -163,8 +163,9 @@ gym-ai/
 - Use typed queries with the `Database` type from `types/index.ts`
 - Design for multi-tenancy now — RLS will be enabled before production
 - pgvector similarity uses **cosine distance**
-- camelCase in TS (`muscleGroup`) vs snake_case in DB (`muscle_group`) — the client converts,
-  but watch this in raw SQL
+- camelCase in TS (`muscleGroup`) vs snake_case in DB (`muscle_group`). supabase-js does **not**
+  convert case: query typed snake_case rows, then map them with the mapper in
+  `lib/supabase/<area>.ts` (e.g. `mapUserProfileRow`, `mapExerciseRow`)
 
 ---
 
@@ -257,7 +258,7 @@ Agents must **stop and ask** before:
 | Symptom | Likely cause | Fix |
 |---|---|---|
 | Next.js API behaves unlike documented online examples | Next.js 16 breaking changes | Read `node_modules/next/dist/docs/`; ignore Next 14 patterns |
-| Supabase query returns `null` fields unexpectedly | camelCase vs snake_case mismatch | Check raw SQL / column names; the JS client converts, raw queries do not |
+| Supabase query returns `null` fields unexpectedly | camelCase vs snake_case mismatch | Rows are snake_case; map them through the area's row mapper instead of casting |
 | AI response fails Zod validation | Model drift or an under-specified prompt | Log the raw output, retry once with a clarified prompt, then fall back to manual mode |
 | Claude calls fail intermittently | Rate limit ≈ 50 req/min (tier dependent) | Back off and retry; batch where possible |
 | Voice input does nothing | Web Speech API unsupported (some iOS/Safari contexts) | Show the manual-entry fallback state |
