@@ -103,7 +103,7 @@ Verified on 2026-11-25 by reading the code and running `npx tsc --noEmit` (11 er
 ### Missing
 
 Login, signup and password-reset pages · onboarding wizard · Program UI · i18n · charts · local
-Supabase config (`supabase/config.toml`) · dev seed · CI.
+Supabase config (`supabase/config.jsonc`) · dev seed · CI.
 
 ### Known defects
 
@@ -200,7 +200,7 @@ The owner must approve any PR that touches these paths.
 | **AI plumbing:** `lib/ai/config.ts` and the shared validated-generation wrapper | B |
 | **Exercise Catalog:** `app/api/exercises/**`, `components/exercise/**`, `hooks/useExercises.ts`, `lib/supabase/exercises.ts` | C |
 | **Substitution:** `app/api/ai/substitute/**`, `app/api/substitutions/**`, `components/substitution/**`, `lib/supabase/substitution.ts`, `lib/training/{load-translation,substitution-filters}.ts`, `messages/*/substitution.json` | C |
-| **Database plumbing:** `supabase/config.toml`, `supabase/seed.sql`, the `Database` section of `types/index.ts`, `lib/supabase/{client,server}.ts` | C |
+| **Database plumbing:** `supabase/config.jsonc`, `supabase/seed.sql`, the `Database` section of `types/index.ts`, `lib/supabase/{client,server}.ts` | C |
 | **Shared, sectioned files** (§6.3): `types/index.ts`, `lib/constants.ts`, `lib/ai/prompts.ts`, `lib/ai/schemas.ts`, `lib/ai/service.ts`, `package.json` | Each owner edits only their section |
 | `AGENTS.md`, `CLAUDE.md`, `docs/**` | Shared. Your own feature spec is yours |
 
@@ -252,7 +252,7 @@ waits on another feature: you build against the stand-in and switch at the miles
 | Seam | Provider → consumers | Contract (frozen at G0) | Stand-in until merged | Real version lands in |
 |---|---|---|---|---|
 | **S1 Authenticated user** | A → B, C | `getCurrentUser()` (route handlers: `null` → 401) and `requireUser()` (pages: redirects to login) in `lib/supabase/auth.ts`, the `AuthUser` type, the protected-route list in `proxy.ts`, the route map (§5.1) | The demo user from the dev seed, signed in through Supabase Studio or a temporary script | Auth session A4 (M1) |
-| **S2 Exercise catalog** | C → B, A | `Exercise` type, canonical vocabularies (equipment, movement patterns including the isolation classification, injury zone → restricted patterns), and the `getCandidateExercises(filters)` / `getExerciseById(id)` signatures | The current 56-exercise seed, with the queries implemented in S0-C2 against current data | CAT-04 (M1) |
+| **S2 Exercise catalog** | C → B, A | `Exercise` type, canonical vocabularies (equipment, movement patterns including the isolation classification, injury zone → restricted patterns), and the `getCandidateExercises(filters)` / `getExerciseById(id)` signatures | The current 53-exercise seed, with the queries implemented in S0-C2 against current data | CAT-04 (M1) |
 | **S3 Plan → planned sessions** | B → A | `WorkoutPlan` / `Microcycle` / planned-session Zod schema, and how a plan becomes `workout_sessions` + `session_exercises` rows (`create_plan_with_sessions`). `getCurrentMicrocycle(planId, date)` signature, so deload weeks can be detected | Plan and planned sessions in the dev seed | RB-02, RB-06 (M2) |
 | **S4 Session runtime** | A → C, B | Session-table schema (S0-J1), the `SessionExercise` domain type, the `SubstitutionSlot` props (below), and the `409 EXERCISE_MISMATCH` rule in `log_set` | Active session in the dev seed. C develops the panel on a scratch page (not committed), against that session | PT-04 (M2) |
 | **S5 Shared UI assets** | B → A | `<BodyMap>` (front and back silhouette, about 10 zones) and `<VolumeVsCapChart>` component props | Placeholder boxes | RB-05, RB-09 |
@@ -293,6 +293,52 @@ Rules:
   the player refetches the session.
 - Undo (5 s) is handled inside the panel, and calls `onSubstituted` again with the restored
   exercise.
+
+### 5.3 Plan, shared UI and onboarding contracts (S0-J3)
+
+`WorkoutPlanSchema` validates generated plan content; the server supplies the plan ID, user ID,
+goals and timestamps. Its exported `MicrocycleSchema`, `PlannedSessionSchema` and
+`PlannedExerciseSchema` describe the nested content. Each level has a non-empty explanation:
+`aiRationale` for the plan and `rationale` for every week, session and exercise. Exercise IDs
+must identify existing catalog entries. Array order is the prescribed order, not a row ID.
+`weight: null` means the starting load is unknown, not zero. The schema checks shape and calendar
+consistency, **not** injury, equipment, volume or recovery safety; RB-03/RB-06 must validate
+those rules before persistence or presentation.
+
+Dates are calendar dates (`YYYY-MM-DD`), not timestamps. Weeks start at `startDate` and end
+before the date seven days later; week numbers begin at 1 and dates are consecutive. Session
+dates must fall within their week. `getCurrentMicrocycle(planId, date): Promise<Microcycle | null>`
+will return the matching week, or `null` outside the plan. Authentication and query errors must
+not be treated as a missing week. Its current body throws until RB-02.
+`isOnboardingComplete(profile: UserProfile): boolean` also throws until RB-04; RB-01 must settle
+completion and persistence semantics first. No demo-user exception is implemented here.
+
+**Provisional seed and RB-02 mapping, pending S0-J1 review:**
+
+| Source | Destination |
+|---|---|
+| Plan identity, name, duration, goals, volume profile, rationale, timestamps | `workout_plans` corresponding snake_case columns; `microcycles` contains the complete nested plan content |
+| Each planned session | One `workout_sessions` row: generated `id`, plan's `user_id` and `plan_id`, session `date` and `name`, `status = 'planned'` |
+| Each planned exercise | One `session_exercises` row: generated `id`, new `session_id`, `exercise_id`, `sets`, `reps`, `weight`, `rir`, `rest_seconds`, `completed = false`, `substituted_from = null` |
+
+Use fixed row UUIDs in the local seed. Keep week, session and exercise rationales and the
+prescribed order in `workout_plans.microcycles`; current session tables have no columns for them
+or a stable link back to nested entries. Do not rely on insertion order to recover exercise
+order. The current `session_exercises.weight` is non-null, so an unknown load cannot be
+materialized without an agreed schema change; never substitute zero. S0-J1 must settle ordering,
+prescription versus logged load, nullable unknown load, and a durable association between the
+plan entries and session rows (including access to rationales). The unit of prescribed weight
+also needs agreement with the profile/units contract. RB-02 owns the transactional
+`create_plan_with_sessions` RPC and must reconcile this mapping with S0-J1 before implementing it.
+Until then S0-C4 can seed a two-week plan with known loads and fixed IDs, but consumers cannot
+assume session rows alone preserve order or rationales. The schema permits a short demo plan;
+the recommended hypertrophy duration remains 8–12 weeks.
+
+S5 props live in `types/index.ts`: `BodyMapProps` uses selection mode with selected zone IDs and
+a toggle callback, or heatmap mode with values keyed by zone ID. Zone names remain subject to
+S0-C3 approval; heatmap units and color scale are consumer presentation decisions.
+`VolumeVsCapChartProps` takes `WeeklyVolume`, the experience cap range, and `isDeloadWeek`;
+the bars and caps count sets, not tonnage. Components arrive in RB-05/RB-09.
 
 ---
 
@@ -429,7 +475,7 @@ for its feature track.
 ### Dev C: database and catalog groundwork
 
 **S0-C1: Set up local Supabase (M)**
-- `npx supabase init` (creates `supabase/config.toml`), `npx supabase start`,
+- `npx supabase init` (creates `supabase/config.jsonc` with CLI 3.x), `npx supabase start`,
   `npx supabase db reset`. All three existing migrations must apply cleanly.
 - Requires Docker. Update the "No Docker required" line in `AGENTS.md`.
 - Write the exact steps into §13 if they differ.
@@ -468,6 +514,9 @@ for its feature track.
 - Confirm with the human owner that `ANTHROPIC_API_KEY` is a real key (D14). Never print it.
 - Add local-Supabase example values to `.env.example`. Document or remove the unused
   `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+- **Status (2026-11-25):** `.env.example` points at local Supabase and the publishable key is no
+  longer referenced. Dev C has **no Anthropic key**: a team key from the human owner (or a
+  personal one) is needed before the G0 AI-call check. Everything else proceeds without it.
 
 **S0-C6: Move and type-fix load translation (S)**
 - Move `lib/utils/load-translation.ts` to `lib/training/load-translation.ts` and fix the missing
@@ -960,7 +1009,13 @@ npm run dev                   # http://localhost:3000
   or logs.
 - Only Dev C points a local checkout at the **hosted** project, and only to apply approved
   migrations.
-- Dev C confirms these commands in S0-C1 and S0-C4, and corrects this section if they differ.
+- Verified in S0-C1 with Supabase CLI 3.4.0 and Docker 29.9: all three migrations apply on
+  `db reset` and the catalog seed loads 53 exercises across all 8 patterns. Studio runs at
+  `http://127.0.0.1:54323`. `supabase/seed.sql` arrives in S0-C4.
+- Open Docker Desktop once after installing it. Until its first launch completes, the `docker`
+  CLI isn't on `PATH` and `supabase start` fails.
+- `supabase start` prints local-only demo keys. Copy `API_URL` and `ANON_KEY` into `.env.local`.
+  They aren't secrets, but keep hosted keys out of chat, PRs and logs.
 
 ---
 

@@ -22,9 +22,9 @@ Five main features:
 
 | # | Feature | AI model |
 |---|---------|----------|
-| 1 | Onboarding → Routine Builder | Claude 3.5 Sonnet |
-| 2 | Real-time Exercise Substitution | Claude 3.5 Sonnet |
-| 3 | Volume Tracking, Progressive Overload & Voice Logging | Claude 3.5 Haiku (parsing) |
+| 1 | Onboarding → Routine Builder | Claude Sonnet 4.5 |
+| 2 | Real-time Exercise Substitution | Claude Sonnet 4.5 |
+| 3 | Volume Tracking, Progressive Overload & Voice Logging | Claude Haiku 4.5 (parsing) |
 | 4 | User Authentication & Management | N/A (Supabase Auth) |
 
 **Any change to training logic, volume math, or exercise selection must be checked against
@@ -37,7 +37,7 @@ Five main features:
 - **Framework:** Next.js 16 (App Router) + TypeScript
 - **UI:** Tailwind CSS 4 + Shadcn UI (Radix primitives)
 - **Database:** Supabase (PostgreSQL + pgvector)
-- **AI:** Vercel AI SDK + Anthropic Claude 3.5 Sonnet / Haiku
+- **AI:** Vercel AI SDK + Anthropic Claude Sonnet 4.5 / Haiku 4.5 (`lib/ai/config.ts`)
 - **Auth:** Supabase Auth (Phase 1 core feature — see [docs/features/user-authentication.md](docs/features/user-authentication.md))
 - **Package manager:** npm — do not introduce pnpm/yarn commands
 
@@ -51,7 +51,8 @@ npm run dev          # start dev server → localhost:3000
 ```
 
 Create `.env.local` at the repo root before running (see **Security & Secrets**).
-No Docker or local database is required — Supabase is hosted.
+Local development requires Docker Desktop for local Supabase — see
+`docs/TEAM-IMPLEMENTATION-PLAN.md` §13 (`npx supabase start`, `npx supabase db reset`).
 
 ---
 
@@ -162,8 +163,9 @@ gym-ai/
 - Use typed queries with the `Database` type from `types/index.ts`
 - Design for multi-tenancy now — RLS will be enabled before production
 - pgvector similarity uses **cosine distance**
-- camelCase in TS (`muscleGroup`) vs snake_case in DB (`muscle_group`) — the client converts,
-  but watch this in raw SQL
+- camelCase in TS (`muscleGroup`) vs snake_case in DB (`muscle_group`). supabase-js does **not**
+  convert case: query typed snake_case rows, then map them with the mapper in
+  `lib/supabase/<area>.ts` (e.g. `mapUserProfileRow`, `mapExerciseRow`)
 
 ---
 
@@ -256,7 +258,7 @@ Agents must **stop and ask** before:
 | Symptom | Likely cause | Fix |
 |---|---|---|
 | Next.js API behaves unlike documented online examples | Next.js 16 breaking changes | Read `node_modules/next/dist/docs/`; ignore Next 14 patterns |
-| Supabase query returns `null` fields unexpectedly | camelCase vs snake_case mismatch | Check raw SQL / column names; the JS client converts, raw queries do not |
+| Supabase query returns `null` fields unexpectedly | camelCase vs snake_case mismatch | Rows are snake_case; map them through the area's row mapper instead of casting |
 | AI response fails Zod validation | Model drift or an under-specified prompt | Log the raw output, retry once with a clarified prompt, then fall back to manual mode |
 | Claude calls fail intermittently | Rate limit ≈ 50 req/min (tier dependent) | Back off and retry; batch where possible |
 | Voice input does nothing | Web Speech API unsupported (some iOS/Safari contexts) | Show the manual-entry fallback state |
@@ -299,7 +301,7 @@ Items lacking repository evidence — confirm before relying on them:
 - [ ] Test runner and `npm test` script — none configured
 - [ ] CI/CD system and which checks must be green to merge — no workflow files verified
 - [ ] Deployment target — Vercel assumed but unconfirmed
-- [ ] Whether a local Supabase (`supabase start`) setup is used for integration tests
+- [x] Local Supabase (`supabase start`) is used for development and integration tests
 - [ ] i18n library for the planned EN/ES support — `next-intl` vs. alternatives
 - [ ] Chart library for the Progress hero chart — Recharts vs. Visx vs. hand-rolled SVG
 
