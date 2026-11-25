@@ -155,11 +155,11 @@ export interface RoutineBuilderResponse {
   progressionNotes: string; // How to progress through the plan
 }
 
-// User Profile Types
+// ===== Auth/Profile =====
 export interface UserProfile {
   id: string;
   email: string;
-  name: string;
+  name: string | null;
   experienceLevel: 'beginner' | 'intermediate' | 'advanced';
   injuries?: Injury[];
   preferences?: {
@@ -168,8 +168,54 @@ export interface UserProfile {
     goals?: Goal[];
   };
   onboarding?: OnboardingData;
+  units: 'kg' | 'lb';
   createdAt: string;
+  updatedAt: string;
 }
+
+export type AuthErrorCode =
+  | 'INVALID_CREDENTIALS' | 'EMAIL_EXISTS' | 'WEAK_PASSWORD' | 'INVALID_EMAIL'
+  | 'PASSWORDS_DONT_MATCH' | 'INVALID_NAME' | 'SAME_PASSWORD' | 'INVALID_RESET_TOKEN'
+  | 'RATE_LIMIT_EXCEEDED' | 'SESSION_EXPIRED' | 'UNAUTHORIZED'
+  | 'NETWORK_ERROR' | 'SERVER_ERROR' | 'UNKNOWN_ERROR';
+
+export interface AuthErrorResponse {
+  error: string;
+  code: AuthErrorCode;
+}
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string | null;
+  createdAt: string;
+  emailVerified: boolean;
+}
+
+export interface AuthSuccessResponse {
+  success: true;
+  user: AuthUser;
+}
+
+export interface SignupRequest {
+  email: string;
+  password: string;
+  name?: string;
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface ResetPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordConfirmRequest {
+  password: string;
+}
+// ===== End Auth/Profile =====
 
 export interface Injury {
   area: string; // E.g., 'lower_back', 'knee', 'shoulder'
