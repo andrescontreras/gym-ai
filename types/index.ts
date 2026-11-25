@@ -366,6 +366,36 @@ export type GeneratedWorkoutPlan = Pick<
   'name' | 'durationWeeks' | 'microcycles' | 'volumeProfile' | 'aiRationale'
 >;
 
+export type TrainingSafetyViolation =
+  | {
+      code: 'missing_exercise';
+      exerciseId: string;
+      weekNumber: number;
+      sessionDate: string;
+      message: string;
+    }
+  | {
+      code: 'weekly_volume_exceeded';
+      weekNumber: number;
+      muscleGroup: string;
+      actualSets: number;
+      maxSets: number;
+      message: string;
+    }
+  | {
+      code: 'insufficient_recovery';
+      muscleGroup: string;
+      previousSessionDate: string;
+      sessionDate: string;
+      gapHours: number;
+      message: string;
+    };
+
+export interface TrainingSafetyValidationResult {
+  ok: boolean;
+  violations: TrainingSafetyViolation[];
+}
+
 export type BodyMapProps =
   | {
       mode: 'selection';

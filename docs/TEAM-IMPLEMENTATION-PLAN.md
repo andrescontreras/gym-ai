@@ -1066,8 +1066,8 @@ Minimum cases:
 | `epley` | A | `(100, 1) → 103.3`, `(75, 9) → 97.5`, `(0, 10) → 0` |
 | Progression rules | A | Last RIR ≤ 2 → +2.5 kg upper / +5 kg lower. RIR ≥ 4 → hold. RIR 0–1 for 2+ weeks → deload suggestion |
 | `countWeeklySetsByMuscle` | B | Sets are counted per primary muscle. Tonnage is not used |
-| `validateWeeklyVolume` | B | Beginner at 13 chest sets → violation. Intermediate at 18 → ok. Fat-loss uses the hypertrophy caps (DEC-07) |
-| `validateRecovery` | B | The same muscle trained within 48 h → violation |
+| `validateWeeklyVolume` | B | Beginner at 13 chest sets → violation. Intermediate at 18 → ok. Under-cap volume → ok. Aggregate sets across every session in each microcycle and count primary muscles only. Fat-loss and endurance reuse the experience-based hypertrophy caps (DEC-07). Missing catalog ID → explicit violation |
+| `validateRecovery` | B | Same muscle trained on the same day or within 48 h → violation. Exactly 48 h → ok. More than 72 h → ok (48–72 h is preferred, not a hard maximum). Check chronological spacing across microcycle boundaries; unrelated muscles do not conflict. Missing catalog ID → explicit violation |
 | `validateInjuryExclusion` | B | A shoulder injury excludes every pattern mapped to that zone in CAT-01 |
 | `resolveSplit` | B | 3 days + "PPL" → ok. 2 days + "PPL" → conflict with a suggested alternative |
 | `translateLoad` barbell → dumbbell | C | 80 kg barbell bench → about 34 kg per hand (80 ÷ 2 × 0.85), rounded to the available increment |
