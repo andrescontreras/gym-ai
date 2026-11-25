@@ -178,22 +178,26 @@ select
   '{"weeklyVolume":45,"volumeDistribution":{"chest":10,"back":13,"shoulders":6,"legs":16},"progressionStrategy":"linear"}',
   'Four-day upper/lower split for an intermediate lifter with full gym access. Each muscle is trained twice a week with 48-72 h of recovery, and weekly sets stay within the intermediate cap.';
 
-insert into workout_sessions (id, user_id, plan_id, date, name, status)
+insert into workout_sessions (id, user_id, plan_id, date, name, status, plan_week_number, plan_session_number)
 select
   md5('gym-ai-seed:plan:' || w || ':' || s.session_key)::uuid,
   '0d000000-0000-4000-8000-000000000001',
   '0d000000-0000-4000-8000-000000000101',
   current_date + (w - 1) * 7 + s.day_offset,
   s.session_name,
-  'planned'
+  'planned',
+  w,
+  row_number() over (partition by w order by s.day_offset)
 from generate_series(1, 2) as w
 cross join seed_sessions s;
 
-insert into session_exercises (id, session_id, exercise_id, sets, reps, weight, rir, rest_seconds, completed)
+insert into session_exercises (id, session_id, exercise_id, position, plan_exercise_number, sets, reps, weight, rir, rest_seconds, completed)
 select
   md5('gym-ai-seed:plan:' || w || ':' || t.session_key || ':' || t.position)::uuid,
   md5('gym-ai-seed:plan:' || w || ':' || t.session_key)::uuid,
   e.id,
+  t.position,
+  t.position,
   t.sets,
   t.reps,
   case when w = 1 then t.weight_plan_week_1 else t.weight_plan_week_2 end,
@@ -211,7 +215,7 @@ join exercises e on e.name = t.exercise_name;
 -- ===========================================================================
 
 update workout_sessions
-set status = 'active'
+set status = 'active', started_at = now() - interval '20 minutes'
 where id = md5('gym-ai-seed:plan:1:upper_a')::uuid;
 
 insert into set_logs (session_exercise_id, set_number, reps_completed, weight_used, rir, created_at)
@@ -227,7 +231,7 @@ from generate_series(1, 2) as n;
 create temp table seed_history_weeks (week_offset int primary key);
 insert into seed_history_weeks values (-3), (-1);
 
-insert into workout_sessions (id, user_id, plan_id, date, name, status, created_at, updated_at)
+insert into workout_sessions (id, user_id, plan_id, date, name, status, started_at, completed_at, created_at, updated_at)
 select
   md5('gym-ai-seed:history:' || h.week_offset || ':' || s.session_key)::uuid,
   '0d000000-0000-4000-8000-000000000001',
@@ -236,15 +240,18 @@ select
   s.session_name,
   'completed',
   (current_date + h.week_offset * 7 + s.day_offset) + time '18:00',
+  (current_date + h.week_offset * 7 + s.day_offset) + time '19:00',
+  (current_date + h.week_offset * 7 + s.day_offset) + time '18:00',
   (current_date + h.week_offset * 7 + s.day_offset) + time '19:00'
 from seed_history_weeks h
 cross join seed_sessions s;
 
-insert into session_exercises (id, session_id, exercise_id, sets, reps, weight, rir, rest_seconds, completed)
+insert into session_exercises (id, session_id, exercise_id, position, sets, reps, weight, rir, rest_seconds, completed)
 select
   md5('gym-ai-seed:history:' || h.week_offset || ':' || t.session_key || ':' || t.position)::uuid,
   md5('gym-ai-seed:history:' || h.week_offset || ':' || t.session_key)::uuid,
   e.id,
+  t.position,
   t.sets,
   t.reps,
   case when h.week_offset = -3 then t.weight_history_week_3 else t.weight_history_week_1 end,
