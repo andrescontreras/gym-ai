@@ -6,7 +6,7 @@ import { getSafeNext } from '@/lib/auth/safe-redirect'
 import { createClient } from '@/lib/supabase/server'
 import type { AuthUser } from '@/types'
 
-function toAuthUser(user: User): AuthUser {
+export function toAuthUser(user: User): AuthUser {
   const name: unknown = user.user_metadata?.name
 
   return {
