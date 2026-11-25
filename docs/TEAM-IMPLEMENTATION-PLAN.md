@@ -313,7 +313,7 @@ not be treated as a missing week. Its current body throws until RB-02.
 `isOnboardingComplete(profile: UserProfile): boolean` also throws until RB-04; RB-01 must settle
 completion and persistence semantics first. No demo-user exception is implemented here.
 
-**Provisional seed and RB-02 mapping, pending S0-J1 review:**
+**Seed and RB-02 mapping (S0-J1 settled the open points in §5.4, which wins where they differ):**
 
 | Source | Destination |
 |---|---|
@@ -339,6 +339,33 @@ a toggle callback, or heatmap mode with values keyed by zone ID. Zone names rema
 S0-C3 approval; heatmap units and color scale are consumer presentation decisions.
 `VolumeVsCapChartProps` takes `WeeklyVolume`, the experience cap range, and `isDeloadWeek`;
 the bars and caps count sets, not tonnage. Components arrive in RB-05/RB-09.
+
+### 5.4 Session tables (S0-J1)
+
+Migration `20261126000000_session_tables_baseline.sql`. The database enforces everything below, so
+a consumer that breaks a rule gets an error, not bad data. Positions and slot numbers are all
+**1-based**, which is what `jsonb_array_elements(...) with ordinality` returns.
+
+| Concern | Rule |
+|---|---|
+| Status lifecycle | `planned` → `active` → `completed`. `planned`: `started_at` and `completed_at` are null. `active`: `started_at` set. `completed`: both set, `completed_at >= started_at`. No other status exists |
+| One active session | A partial unique index allows one `active` row per user. A's `start_session` turns the violation into a clean error; nobody else sets `active` |
+| Exercise order | `session_exercises.position`: required, `>= 1`, unique within the session. Substituting keeps it. Never rely on insertion order or `id` |
+| Prescribed vs. logged | `session_exercises.{sets,reps,weight,rir}` is the **prescription**. What happened is in `set_logs` (`weight_used`). Neither overwrites the other |
+| Unknown starting load | `session_exercises.weight` is nullable. `NULL` means unknown, never `0`. `log_set` still records the real load. The UI asks the user for one |
+| Units | Every stored weight is **kg** (dumbbells per hand), including `PlannedExercise.weight` in `microcycles` and `set_logs.weight_used`. The profile's `units` only changes display (conversion in `lib/training/units.ts`, PT-01) |
+| Link to the plan | `workout_sessions.plan_week_number` (the microcycle's `weekNumber`) and `plan_session_number` (index in `sessions`), `session_exercises.plan_exercise_number` (index in `exercises`). Rationales: `microcycles -> (plan_week_number - 1) -> 'sessions' -> (plan_session_number - 1) -> 'rationale'`, and the same one level down for exercises. All three are null for sessions not generated from a plan. A plan slot becomes at most one session row, so `create_plan_with_sessions` can use `on conflict do nothing` to be safely retried |
+| Substitution | `substituted_from` (original exercise) is set together with `substituted_at` and `original_reps`, or all three are null. `original_weight` (kg, null if it was unknown) and `substitution_rationale` are optional. C's swap RPC writes them; `undo_substitution` restores `exercise_id`, `reps` and `weight` from them and clears all five |
+| `updated_at` | Updated by a trigger on `workout_sessions` |
+
+**RB-02 mapping.** Each planned session becomes one `workout_sessions` row with `status = 'planned'`,
+`plan_week_number = weekNumber`, `plan_session_number = ordinality` and null timestamps. Each planned
+exercise becomes one `session_exercises` row with `position = plan_exercise_number = ordinality`
+and `weight` copied as-is, including `null`.
+
+Not decided here, left to the owner: what a second substitution of the same row stores
+(recommended: keep the first `substituted_from` and `original_*`, so the label always names the
+prescribed exercise), and the `SessionExercise` domain type's `weight: number | null` (S0-J5).
 
 ---
 

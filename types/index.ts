@@ -485,6 +485,10 @@ type WorkoutSessionRow = {
   date: string;
   name: string;
   status: WorkoutSession['status'];
+  started_at: string | null;
+  completed_at: string | null;
+  plan_week_number: number | null;
+  plan_session_number: number | null;
   created_at: string;
   updated_at: string;
 };
@@ -493,15 +497,21 @@ type SessionExerciseRow = {
   id: string;
   session_id: string;
   exercise_id: string | null;
+  position: number;
+  plan_exercise_number: number | null;
   sets: number;
   reps: number;
-  weight: number;
+  weight: number | null;
   rir: number;
   rpe: number | null;
   rest_seconds: number;
   notes: string | null;
   completed: boolean;
   substituted_from: string | null;
+  substituted_at: string | null;
+  substitution_rationale: string | null;
+  original_reps: number | null;
+  original_weight: number | null;
 };
 
 type SetLogRow = {
@@ -531,7 +541,7 @@ export interface Database {
       workout_sessions: TableDefinition<WorkoutSessionRow, 'user_id' | 'date' | 'name'>;
       session_exercises: TableDefinition<
         SessionExerciseRow,
-        'session_id' | 'sets' | 'reps' | 'weight' | 'rir'
+        'session_id' | 'position' | 'sets' | 'reps' | 'weight' | 'rir'
       >;
       set_logs: TableDefinition<
         SetLogRow,
