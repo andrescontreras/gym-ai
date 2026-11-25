@@ -259,6 +259,62 @@ Before merging any change to training logic, verify:
       hypertrophy-oriented
 - [ ] Whether Epley or a formula better suited to higher rep ranges (Brzycki, Lombardi)
       should be used above ~10 reps, where Epley loses accuracy
-- [ ] Exact injury-zone taxonomy and its mapping to `restrictedPatterns[]`
+- [ ] Exact injury-zone taxonomy and its mapping to `restrictedPatterns[]` — proposal in §8
 - [ ] Whether deload weeks are pre-scheduled at generation time or triggered reactively
       from RIR data (or both)
+
+---
+
+## 8. Proposed: Catalog Vocabularies (pending sign-off)
+
+> **Status: Proposed (S0-C3).** Not binding until the product owner answers Q1 and Q2 in
+> `TEAM-IMPLEMENTATION-PLAN.md` §17. Code lives in the catalog section of `lib/constants.ts`.
+
+### 8.1 Equipment vocabulary
+
+- **Main equipment** matches `EquipmentType`: `full_gym`, `dumbbells`, `barbell`,
+  `kettlebells`, `resistance_bands`, `bodyweight`, `machines`, `cables`
+- **Accessories** an exercise may also require: `bench`, `rack`, `pull_up_bar`, `landmine`,
+  `box`, `trap_bar`. Users never select these in onboarding; `full_gym` implies all of them.
+  Other presets imply none — the user must confirm them
+- **Aliases** in the current seed are normalized: `dumbbell` → `dumbbells`, `machine` →
+  `machines`, `cable` → `cables`, `bar` → `pull_up_bar`. CAT-02 rewrites the seed so aliases
+  are no longer needed
+
+### 8.2 Injury zone → restricted patterns
+
+Conservative by design: a pattern is excluded when it plausibly loads the zone. Severity does
+not relax the mapping in the MVP.
+
+| Zone | Restricted patterns |
+|---|---|
+| `neck` | `push_vertical`, `carry` |
+| `shoulder` | `push_horizontal`, `push_vertical`, `pull_vertical` |
+| `elbow` | `push_horizontal`, `push_vertical`, `pull_horizontal`, `pull_vertical` |
+| `wrist` | `push_horizontal`, `push_vertical`, `carry` |
+| `lower_back` | `squat`, `hinge`, `carry` |
+| `hip` | `squat`, `hinge`, `lunge` |
+| `knee` | `squat`, `lunge` |
+| `ankle` | `squat`, `lunge`, `carry` |
+
+Questions for review:
+
+- `lower_back` leaves `pull_horizontal` allowed, but bent-over rows load the spine. Should
+  restrictions apply per exercise (e.g. allow chest-supported rows only)?
+- `elbow` removes every upper-body pattern. Is that acceptable for mild severity?
+- The §2.1 example replaces deep squats with leg press for knee pain, but leg press is a
+  `squat`-pattern exercise. Under this table it is excluded. Confirm or revise the example
+
+### 8.3 Isolation exercises
+
+The seed tags curls, raises, pushdowns, leg curl/extension and calf raise with compound
+patterns (e.g. calf raise as `squat`), so the pattern lock could swap a calf raise for a
+back squat.
+
+Proposal (Q2 default):
+
+- Add an explicit isolation classification (`biomechanicalTags: ['isolation']` plus the
+  target muscle) instead of borrowing compound patterns
+- Isolation exercises substitute only with isolation exercises for the same primary muscle,
+  and never cross into compound patterns
+- Injury restrictions apply to isolation exercises through the zone they load
