@@ -1,10 +1,15 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { z } from 'zod';
-import { MicrocycleSchema, WorkoutPlanSchema } from '@/lib/ai/schemas';
+import { GoalSchema, WorkoutPlanSchema } from '@/lib/ai/schemas';
 import { createClient } from '@/lib/supabase/server';
-import type { Database, Microcycle, TableRow, WorkoutPlan } from '@/types';
+import type {
+  CreateWorkoutPlanInput,
+  Database,
+  Microcycle,
+  TableRow,
+  WorkoutPlan,
+} from '@/types';
 
-// S3 seam; transactional creation waits for the S0-J1 session schema.
 function mapWorkoutPlanRow(row: TableRow<'workout_plans'>): WorkoutPlan {
   const parsedPlan = WorkoutPlanSchema.safeParse({
     name: row.name,
@@ -20,14 +25,71 @@ function mapWorkoutPlanRow(row: TableRow<'workout_plans'>): WorkoutPlan {
     });
   }
 
+  const parsedGoals = z.array(GoalSchema).safeParse(row.goals);
+  if (!parsedGoals.success) {
+    throw new Error('Stored workout plan goals do not match the plan contract', {
+      cause: parsedGoals.error,
+    });
+  }
+
   return {
     id: row.id,
     userId: row.user_id,
     ...parsedPlan.data,
-    goals: row.goals,
+    goals: parsedGoals.data,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
+}
+
+export async function createPlanWithSessions(
+  supabase: SupabaseClient<Database>,
+  plan: CreateWorkoutPlanInput
+): Promise<WorkoutPlan> {
+  const parsedId = z.uuid().parse(plan.id);
+  const parsedUserId = z.uuid().parse(plan.userId);
+  const parsedPlan = WorkoutPlanSchema.parse({
+    name: plan.name,
+    durationWeeks: plan.durationWeeks,
+    microcycles: plan.microcycles,
+    volumeProfile: plan.volumeProfile,
+    aiRationale: plan.aiRationale,
+  });
+  const goals = z.array(GoalSchema).min(1).parse(plan.goals);
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError) {
+    console.error('Error authenticating workout plan creation:', authError.message);
+    throw new Error('Failed to authenticate workout plan creation', { cause: authError });
+  }
+
+  if (!user || user.id !== parsedUserId) {
+    throw new Error('Authentication required to create a workout plan for this user');
+  }
+
+  const { data: planId, error } = await supabase.rpc('create_plan_with_sessions', {
+    p_plan: {
+      id: parsedId,
+      userId: parsedUserId,
+      ...parsedPlan,
+      goals,
+    },
+  });
+
+  if (error) {
+    console.error('Error creating workout plan and sessions:', error.message);
+    throw new Error('Failed to create workout plan and sessions', { cause: error });
+  }
+
+  const savedPlan = await getPlan(supabase, user.id, planId);
+  if (!savedPlan) {
+    throw new Error('Workout plan was created but could not be retrieved');
+  }
+
+  return savedPlan;
 }
 
 export async function getPlans(
@@ -93,7 +155,7 @@ export async function getCurrentMicrocycle(
 
   const { data, error } = await supabase
     .from('workout_plans')
-    .select('microcycles')
+    .select('*')
     .eq('user_id', user.id)
     .eq('id', planId)
     .maybeSingle();
@@ -107,16 +169,9 @@ export async function getCurrentMicrocycle(
     return null;
   }
 
-  const parsedMicrocycles = z.array(MicrocycleSchema).safeParse(data.microcycles);
-
-  if (!parsedMicrocycles.success) {
-    throw new Error('Stored workout plan microcycles do not match the plan contract', {
-      cause: parsedMicrocycles.error,
-    });
-  }
-
+  const microcycles = mapWorkoutPlanRow(data).microcycles;
   return (
-    parsedMicrocycles.data.find((microcycle) => {
+    microcycles.find((microcycle) => {
       const startDate = microcycle.startDate;
       const endDate = new Date(`${startDate}T00:00:00.000Z`);
       endDate.setUTCDate(endDate.getUTCDate() + 7);

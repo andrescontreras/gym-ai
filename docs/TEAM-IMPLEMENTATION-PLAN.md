@@ -313,26 +313,19 @@ not be treated as a missing week. Its current body throws until RB-02.
 `isOnboardingComplete(profile: UserProfile): boolean` also throws until RB-04; RB-01 must settle
 completion and persistence semantics first. No demo-user exception is implemented here.
 
-**Seed and RB-02 mapping (S0-J1 settled the open points in §5.4, which wins where they differ):**
+**Seed and RB-02 mapping (S0-J1 settled the open points in §5.4):**
 
 | Source | Destination |
 |---|---|
 | Plan identity, name, duration, goals, volume profile, rationale, timestamps | `workout_plans` corresponding snake_case columns; `microcycles` contains the complete nested plan content |
 | Each planned session | One `workout_sessions` row: generated `id`, plan's `user_id` and `plan_id`, session `date` and `name`, `status = 'planned'` |
-| Each planned exercise | One `session_exercises` row: generated `id`, new `session_id`, `exercise_id`, `sets`, `reps`, `weight`, `rir`, `rest_seconds`, `completed = false`, `substituted_from = null` |
+| Each planned exercise | One `session_exercises` row: generated `id`, new `session_id`, `exercise_id`, `position` and `plan_exercise_number` from the exercise's 1-based position, `sets`, `reps`, `weight` (including `null`), `rir`, `rest_seconds`, `completed = false`, `substituted_from = null` |
 
-Use fixed row UUIDs in the local seed. Keep week, session and exercise rationales and the
-prescribed order in `workout_plans.microcycles`; current session tables have no columns for them
-or a stable link back to nested entries. Do not rely on insertion order to recover exercise
-order. The current `session_exercises.weight` is non-null, so an unknown load cannot be
-materialized without an agreed schema change; never substitute zero. S0-J1 must settle ordering,
-prescription versus logged load, nullable unknown load, and a durable association between the
-plan entries and session rows (including access to rationales). The unit of prescribed weight
-also needs agreement with the profile/units contract. RB-02 owns the transactional
-`create_plan_with_sessions` RPC and must reconcile this mapping with S0-J1 before implementing it.
-Until then S0-C4 can seed a two-week plan with known loads and fixed IDs, but consumers cannot
-assume session rows alone preserve order or rationales. The schema permits a short demo plan;
-the recommended hypertrophy duration remains 8–12 weeks.
+Keep week, session and exercise rationales in `workout_plans.microcycles`; the S0-J1 week/session/
+exercise slot numbers provide the durable links to those rationale fields. Prescribed weights are
+stored in kg, with `null` for unknown loads. The local seed uses fixed row UUIDs; the transactional
+`create_plan_with_sessions` RPC uses the same slot mapping and is safe to retry. The schema permits
+a short demo plan; the recommended hypertrophy duration remains 8–12 weeks.
 
 S5 props live in `types/index.ts`: `BodyMapProps` uses selection mode with selected zone IDs and
 a toggle callback, or heatmap mode with values keyed by zone ID. Zone names remain subject to

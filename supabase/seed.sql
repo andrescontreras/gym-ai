@@ -1,7 +1,7 @@
 -- Gym AI local dev seed (PROP-07). LOCAL ONLY: never apply to a hosted project.
 -- Applied by `npx supabase db reset`. Dates are relative to the reset day, so "today" always has
 -- the active session. Each owner maintains their section (TEAM-IMPLEMENTATION-PLAN.md §6.3).
--- Provisional per §5.3: session rows follow the current schema until S0-J1 lands.
+-- Plan and session rows follow the S0-J1/S0-J3 contracts in TEAM-IMPLEMENTATION-PLAN.md.
 
 -- ===========================================================================
 -- Users (Dev A)
