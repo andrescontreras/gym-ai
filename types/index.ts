@@ -1,4 +1,6 @@
-// Core Exercise Types
+// Shared types
+
+// Catalog types (Dev C)
 export interface Exercise {
   id: string;
   name: string;
@@ -38,7 +40,27 @@ export interface CandidateExerciseFilters {
   muscleGroup?: string;
 }
 
-// Session & Workout Types
+export type EquipmentType =
+  | 'full_gym'
+  | 'dumbbells'
+  | 'barbell'
+  | 'kettlebells'
+  | 'resistance_bands'
+  | 'bodyweight'
+  | 'machines'
+  | 'cables';
+
+export type MovementPattern =
+  | 'push_horizontal'
+  | 'push_vertical'
+  | 'pull_horizontal'
+  | 'pull_vertical'
+  | 'squat'
+  | 'hinge'
+  | 'lunge'
+  | 'carry';
+
+// Session and tracking types (Dev A)
 export interface WorkoutSession {
   id: string;
   userId: string;
@@ -75,33 +97,6 @@ export interface SetLog {
   timestamp: string;
 }
 
-// AI Substitution Types
-export interface SubstitutionRequest {
-  exerciseId: string;
-  reason: string; // NLP input from user (voice or text)
-  reasonCategory?: 'equipment_occupied' | 'pain_discomfort' | 'lack_space' | 'home_workout' | 'preference' | 'other';
-  currentWeight: number;
-  currentReps: number;
-  currentRir: number;
-  voiceInput?: boolean; // Flag if input came from voice
-}
-
-export interface SubstitutionSuggestion {
-  exercise: Exercise;
-  justification: string;
-  adjustedWeight: number;
-  adjustedReps: number;
-  confidenceScore: number; // 0-1
-  biomechanicalEquivalence: string; // Technical explanation
-}
-
-export interface SubstitutionResponse {
-  suggestions: SubstitutionSuggestion[];
-  originalExercise: Exercise;
-  processingTime: number;
-}
-
-// Volume Tracking & Progress Types
 export interface VolumeCalculation {
   exerciseId: string;
   exerciseName: string;
@@ -149,7 +144,6 @@ export interface PredictiveLoad {
   confidenceScore: number; // 0-1
 }
 
-// Voice Input & NLP Types
 export interface VoiceTrackingInput {
   audioBlob?: Blob; // Raw audio for transcription
   transcription?: string; // Pre-transcribed text
@@ -166,21 +160,33 @@ export interface ParsedTrackingData {
   rawInput: string;
 }
 
-// Routine Builder AI Request/Response Types
-export interface RoutineBuilderRequest {
-  userId: string;
-  onboardingData: OnboardingData;
-  userProfile: UserProfile;
+// Substitution types (Dev C)
+export interface SubstitutionRequest {
+  exerciseId: string;
+  reason: string; // NLP input from user (voice or text)
+  reasonCategory?: 'equipment_occupied' | 'pain_discomfort' | 'lack_space' | 'home_workout' | 'preference' | 'other';
+  currentWeight: number;
+  currentReps: number;
+  currentRir: number;
+  voiceInput?: boolean; // Flag if input came from voice
 }
 
-export interface RoutineBuilderResponse {
-  plan: WorkoutPlan;
-  aiRationale: string; // Natural language explanation
-  injuryConsiderations: string[]; // Warnings/adaptations made
-  progressionNotes: string; // How to progress through the plan
+export interface SubstitutionSuggestion {
+  exercise: Exercise;
+  justification: string;
+  adjustedWeight: number;
+  adjustedReps: number;
+  confidenceScore: number; // 0-1
+  biomechanicalEquivalence: string; // Technical explanation
 }
 
-// User Profile Types
+export interface SubstitutionResponse {
+  suggestions: SubstitutionSuggestion[];
+  originalExercise: Exercise;
+  processingTime: number;
+}
+
+// Auth and profile types (Dev A)
 export interface UserProfile {
   id: string;
   email: string;
@@ -196,6 +202,7 @@ export interface UserProfile {
   createdAt: string;
 }
 
+// Onboarding and plan types (Dev B)
 export interface Injury {
   area: string; // E.g., 'lower_back', 'knee', 'shoulder'
   type?: string; // E.g., 'tendinitis', 'strain', 'chronic_pain'
@@ -209,7 +216,6 @@ export interface Goal {
   priority: 'primary' | 'secondary';
 }
 
-// Onboarding & Routine Builder Types
 export interface OnboardingData {
   goals: Goal[];
   injuryHistory: Injury[];
@@ -219,27 +225,6 @@ export interface OnboardingData {
   completedAt: string;
 }
 
-export type EquipmentType =
-  | 'full_gym'
-  | 'dumbbells'
-  | 'barbell'
-  | 'kettlebells'
-  | 'resistance_bands'
-  | 'bodyweight'
-  | 'machines'
-  | 'cables';
-
-export type MovementPattern =
-  | 'push_horizontal'
-  | 'push_vertical'
-  | 'pull_horizontal'
-  | 'pull_vertical'
-  | 'squat'
-  | 'hinge'
-  | 'lunge'
-  | 'carry';
-
-// Routine Builder Output
 export interface WorkoutPlan {
   id: string;
   userId: string;
@@ -267,7 +252,21 @@ export interface VolumeProfile {
   progressionStrategy: 'linear' | 'undulating' | 'block';
 }
 
-// Database Types (for Supabase)
+// AI types: routine builder (Dev B)
+export interface RoutineBuilderRequest {
+  userId: string;
+  onboardingData: OnboardingData;
+  userProfile: UserProfile;
+}
+
+export interface RoutineBuilderResponse {
+  plan: WorkoutPlan;
+  aiRationale: string; // Natural language explanation
+  injuryConsiderations: string[]; // Warnings/adaptations made
+  progressionNotes: string; // How to progress through the plan
+}
+
+// Database types (Dev C)
 export interface Database {
   public: {
     Tables: {

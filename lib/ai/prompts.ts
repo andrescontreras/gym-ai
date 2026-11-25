@@ -7,6 +7,7 @@ import type {
   Injury,
 } from '@/types';
 
+// Substitution (Dev C)
 export function buildSubstitutionPrompt(
   originalExercise: Exercise,
   request: SubstitutionRequest,
@@ -46,6 +47,7 @@ For each suggestion, provide:
 Return your response as a JSON array of suggestions.`;
 }
 
+// Shared AI prompt
 export const SYSTEM_PROMPT = `You are an AI personal trainer integrated into a gym workout app. Your role is to provide intelligent exercise substitutions that maintain training quality while accommodating real-time constraints (equipment availability, pain/discomfort, space limitations).
 
 Key principles:
@@ -55,6 +57,7 @@ Key principles:
 - Provide clear, actionable guidance with load adjustments
 - Be concise but technically accurate`;
 
+// Routine builder (Dev B)
 /**
  * Routine Builder Prompt
  * Generates a complete workout plan based on onboarding data
@@ -112,6 +115,7 @@ Provide:
 - Natural language rationale explaining the programming decisions`;
 }
 
+// Progress tracking and voice parsing (Dev A)
 /**
  * Voice Parsing Prompt
  * Extracts structured data from voice transcription
