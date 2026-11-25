@@ -254,6 +254,7 @@ The prototype invokes `/api/suggest-alternative`; Gym AI must use its existing t
 - `experience_level` and `injuries` mirror `onboarding.experienceLevel` and `onboarding.injuries` for existing profile consumers.
 - Goal, biometrics, availability, equipment, preferred split, and known lifts are stored in the `onboarding` JSONB snapshot. `preferences` remains for durable user preferences outside this submission.
 - No schema migration is required for RB-01. Any update must write the snapshot and its mirrors atomically.
+- A saved draft is not completion. RB-04 must define a durable indication that the user confirmed review, and `isOnboardingComplete` must require that indication and a valid v2 snapshot. Neither the indication nor persistence is implemented by RB-01.
 
 ### Onboarding contract (v2)
 
@@ -388,25 +389,18 @@ The request uses the v2 onboarding contract: experience, goal, biometrics needed
 
 ### Response Format (Zod Schema)
 
-```typescript
-const WorkoutPlanSchema = z.object({
-  name: z.string(),
-  durationWeeks: z.number().min(4).max(16),
-  microcycles: z.array(z.object({
-    weekNumber: z.number(),
-    focus: z.string(),
-    sessions: z.array(/* typed serializable session schema */)
-  })),
-  volumeProfile: z.object({
-    weeklyVolume: z.number(),
-    volumeDistribution: z.record(z.string(), z.number()),
-    progressionStrategy: z.enum(['linear', 'undulating', 'block'])
-  }),
-  aiRationale: z.string()
-});
-```
+`WorkoutPlanSchema` validates generated plan content using the strict nested
+`MicrocycleSchema`, `PlannedSessionSchema`, and `PlannedExerciseSchema` from S0-J3.
+Each week, session, and exercise includes a rationale; exercise IDs are catalog UUIDs,
+and `weight: null` represents an unknown starting load. The server supplies plan identity,
+user identity, goals, and timestamps. See `TEAM-IMPLEMENTATION-PLAN.md` §5.3 for
+date consistency and planned-session mapping.
 
-`z.any()` currently validates sessions in the existing schema and must be replaced with a strict serializable session/exercise schema before persistence.
+Schema validation alone does not establish injury, equipment, volume, recovery, or catalog
+safety. RB-03 and RB-06 must enforce those invariants before persistence or presentation.
+The current structured output schema has no safety-blocker variant, so the future generation
+route must surface unresolved safety constraints as an error rather than relying on the model
+to return a blocker in a plan-shaped response.
 
 ### Fallback Behavior
 
@@ -610,7 +604,7 @@ Expected: an 8-12 week plan that uses a recovery-aware four-day split, includes 
 ### Blockers
 
 - [ ] Implement the routine-generation route.
-- [ ] Add a typed request and serializable session schema.
+- [ ] Integrate the typed onboarding request and S0-J3 serializable plan schema in the generation route.
 - [ ] Build deterministic safety validators.
 - [ ] Implement workout-plan and planned-session persistence.
 - [ ] Resolve TEAM-IMPLEMENTATION-PLAN.md Q1 before enabling injury-to-pattern safety validation; do not infer product approval from the proposed mapping.
