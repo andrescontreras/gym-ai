@@ -514,6 +514,9 @@ for its feature track.
 - Confirm with the human owner that `ANTHROPIC_API_KEY` is a real key (D14). Never print it.
 - Add local-Supabase example values to `.env.example`. Document or remove the unused
   `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+- **Status (2026-11-25):** `.env.example` points at local Supabase and the publishable key is no
+  longer referenced. Dev C has **no Anthropic key**: a team key from the human owner (or a
+  personal one) is needed before the G0 AI-call check. Everything else proceeds without it.
 
 **S0-C6: Move and type-fix load translation (S)**
 - Move `lib/utils/load-translation.ts` to `lib/training/load-translation.ts` and fix the missing
