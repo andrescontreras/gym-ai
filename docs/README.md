@@ -10,7 +10,7 @@ This folder contains all feature specifications, templates, and development guid
 
 | Document | Purpose |
 |----------|---------|
-| **[TEAM-IMPLEMENTATION-PLAN.md](TEAM-IMPLEMENTATION-PLAN.md)** | Phased plan for the 3-person team: ownership, task cards, gates, collaboration rules, and the AI-agent hand-off prompt |
+| **[TEAM-IMPLEMENTATION-PLAN.md](TEAM-IMPLEMENTATION-PLAN.md)** | Feature-based plan for the 3-person team: feature ownership, seams between features, per-developer briefs, milestones, and the AI-agent hand-off prompt |
 | **[DOMAIN-RULES.md](DOMAIN-RULES.md)** | Safety-critical training science rules |
 | **[WIREFRAME-BRIEF.md](WIREFRAME-BRIEF.md)** | Screen and design decisions |
 
@@ -104,16 +104,17 @@ docs/
 
 ---
 
-## 🎯 4 Core Features
+## 🎯 Core Features
 
-Based on `FOUNDATION_COMPLETE.md`, your team is building:
+Owners and order of work are defined in [TEAM-IMPLEMENTATION-PLAN.md](TEAM-IMPLEMENTATION-PLAN.md) §4.
 
-| Feature | Owner | Spec File | Status |
-|---------|-------|-----------|--------|
-| **Personalized Routines** | [Team A] | `features/personalized-routines.md` | 📝 Planning |
-| **Exercise Substitutions** | [Team B] | `features/exercise-substitution.md` | 📝 Planning |
-| **Volume Optimization** | [Team C] | `features/volume-optimization.md` | 📝 Planning |
-| **Workout Logging** | [Team D] | `features/workout-logging.md` | 📝 Planning |
+| Feature | Owner | Spec File |
+|---------|-------|-----------|
+| **User Authentication & Management** | Dev A (1st) | `features/user-authentication.md` + `features/user-authentication-plan.md` |
+| **Progress Tracking** | Dev A (2nd) | `features/progress-tracking.md` |
+| **Personalized Routine Builder** | Dev B | `features/personalized-routine-builder.md` |
+| **Exercise Catalog** | Dev C (1st) | Team plan §10 (no separate spec yet) |
+| **Intelligent Exercise Substitution** | Dev C (2nd) | `features/intelligent-exercise-substitution.md` |
 
 ---
 
