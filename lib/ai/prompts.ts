@@ -3,8 +3,6 @@ import type {
   SubstitutionRequest,
   UserProfile,
   RoutineBuilderRequest,
-  Goal,
-  Injury,
 } from '@/types';
 
 // Substitution (Dev C)
@@ -27,7 +25,7 @@ ${request.reason}
 ## User Context
 ${userProfile ? `
 - Experience Level: ${userProfile.experienceLevel}
-- Known Injuries: ${userProfile.injuries?.join(', ') || 'None'}
+- Known Injuries: ${userProfile.injuries?.map((injury) => `${injury.zone} (${injury.severity})`).join(', ') || 'None'}
 - Equipment Preferences: ${userProfile.preferences?.preferredEquipment?.join(', ') || 'None specified'}
 ` : 'No user profile available'}
 
@@ -63,28 +61,33 @@ Key principles:
  * Generates a complete workout plan based on onboarding data
  */
 export function buildRoutineBuilderPrompt(request: RoutineBuilderRequest): string {
-  const { onboardingData, userProfile } = request;
+  const { onboardingData } = request;
 
   return `You are an expert strength and hypertrophy coach. Design a personalized workout plan for a user based on their profile.
 
 ## User Profile
-- Experience Level: ${userProfile.experienceLevel}
-- Goals: ${onboardingData.goals.map((g: Goal) => `${g.type} (${g.priority})`).join(', ')}
-- Training Frequency: ${onboardingData.daysPerWeek} days/week
-- Session Duration: ${onboardingData.sessionDuration} minutes
-- Available Equipment: ${onboardingData.equipment.join(', ')}
+- Experience Level: ${onboardingData.experienceLevel}
+- Goal: ${onboardingData.goal}
+- Age: ${onboardingData.biometrics.age}
+- Bodyweight: ${onboardingData.biometrics.bodyweight} ${onboardingData.biometrics.units}
+- Training Frequency: ${onboardingData.availability.daysPerWeek} days/week
+- Session Duration: ${onboardingData.availability.minutesPerSession} minutes
+- Equipment Preset: ${onboardingData.equipment.preset ?? 'custom'}
+- Available Equipment: ${onboardingData.equipment.items.join(', ')}
+- Preferred Split: ${onboardingData.preferredSplit}
+- Known Best Sets (${onboardingData.biometrics.units}): ${JSON.stringify(onboardingData.knownLifts ?? {})}
 
 ## Injury History & Restrictions
-${onboardingData.injuryHistory.length > 0
-  ? onboardingData.injuryHistory.map((injury: Injury) =>
-      `- ${injury.area} (${injury.severity}): Avoid ${injury.restrictedPatterns?.join(', ') || 'none specified'}`
+${onboardingData.injuries.length > 0
+  ? onboardingData.injuries.map((injury) =>
+      `- ${injury.zone} (${injury.severity})${injury.notes ? `: ${injury.notes}` : ''}`
     ).join('\n')
   : 'No injuries reported'}
 
 ## Task
 Create a workout plan (mesocycle) that:
 
-1. **Injury-Aware Programming**: Completely avoid restricted movement patterns. Replace dangerous exercises with safe biomechanical alternatives.
+1. **Injury-Aware Programming**: Apply only product-approved zone-to-pattern restrictions. If a reported zone has no approved mapping, do not infer one or claim a plan is safe; return an explicit safety blocker.
 
 2. **Anti-Overtraining Volume**: Calculate optimal weekly volume based on experience level:
    - Beginner: 10-12 sets per muscle group per week
@@ -93,8 +96,9 @@ Create a workout plan (mesocycle) that:
 
 3. **Intelligent Split**: Design a training split (e.g., Push/Pull/Legs, Upper/Lower, Full Body) that:
    - Guarantees 48-72 hours recovery between training the same muscle group
-   - Fits the user's ${onboardingData.daysPerWeek}-day schedule
-   - Maximizes training efficiency within ${onboardingData.sessionDuration} minutes
+   - Fits the user's ${onboardingData.availability.daysPerWeek}-day schedule
+   - Maximizes training efficiency within ${onboardingData.availability.minutesPerSession} minutes
+   - Consider the preferred ${onboardingData.preferredSplit} split, but preserve recovery constraints
 
 4. **Periodization**: Structure the plan in microcycles (weeks) with clear progression:
    - Accumulation phases (higher volume, moderate intensity)

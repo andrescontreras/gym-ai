@@ -226,10 +226,8 @@ export interface UserProfile {
 
 // Onboarding and plan types (Dev B)
 export interface Injury {
-  area: string; // E.g., 'lower_back', 'knee', 'shoulder'
-  type?: string; // E.g., 'tendinitis', 'strain', 'chronic_pain'
+  zone: InjuryZone;
   severity: 'mild' | 'moderate' | 'severe';
-  restrictedPatterns?: MovementPattern[]; // Patterns to avoid
   notes?: string;
 }
 
@@ -238,13 +236,45 @@ export interface Goal {
   priority: 'primary' | 'secondary';
 }
 
+export type OnboardingGoal = 'hypertrophy' | 'fat_loss' | 'endurance';
+export type EquipmentPreset = 'commercial' | 'home' | 'bodyweight';
+export type PreferredSplit = 'full_body' | 'upper_lower' | 'ppl' | 'no_preference';
+export type KnownLift = 'squat' | 'bench' | 'deadlift';
+export type WeightUnit = 'kg' | 'lb';
+
+export interface OnboardingBiometrics {
+  sex?: string;
+  age: number;
+  heightCm: number;
+  bodyweight: number;
+  units: WeightUnit;
+}
+
+export interface OnboardingAvailability {
+  daysPerWeek: 2 | 3 | 4 | 5 | 6;
+  minutesPerSession: 30 | 45 | 60 | 75 | 90;
+}
+
+export interface OnboardingEquipment {
+  preset?: EquipmentPreset;
+  items: EquipmentType[];
+}
+
+export interface BestSet {
+  weight: number;
+  reps: number;
+}
+
 export interface OnboardingData {
-  goals: Goal[];
-  injuryHistory: Injury[];
-  daysPerWeek: number; // 2-7 days
-  sessionDuration: number; // Minutes per session (e.g., 45, 60, 90)
-  equipment: EquipmentType[];
-  completedAt: string;
+  version: 2;
+  goal: OnboardingGoal;
+  experienceLevel: UserProfile['experienceLevel'];
+  biometrics: OnboardingBiometrics;
+  injuries: Injury[];
+  availability: OnboardingAvailability;
+  equipment: OnboardingEquipment;
+  preferredSplit: PreferredSplit;
+  knownLifts?: Partial<Record<KnownLift, BestSet>>;
 }
 
 export interface WorkoutPlan {
