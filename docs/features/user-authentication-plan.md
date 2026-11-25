@@ -858,7 +858,7 @@ history.
 | A1 | Merged | `feature/AUTH-05-auth-contracts` | Added own `Auth/Profile` section (S0-B3 absent) and `messages/{en,es}/auth.json` (S0-B4 absent). 11 pre-existing tsc errors (Card, Modal, volume.ts etc.) unrelated. `@/messages/en/auth.json` import in responses.ts needs `resolveJsonModule` (on). |
 | A2 | Merged | `feature/AUTH-01-auth-deps-config` | Config file is `supabase/config.jsonc`, not `.toml` (A13 must fix plan/spec refs). Two commits = two PRs (deps, then config). Hosted Supabase: needs same site_url, redirect URL, min password 8, recovery/confirmation templates (human approval). |
 | A3 | Merged | `feature/AUTH-03-profile-trigger` | Migration `20260901000000_auth_profile_trigger.sql`. No `seed.sql` exists yet, so nothing to adjust. Tested via docker exec (no local psql). Not applied to hosted Supabase (needs approval). |
-| A4 | Not started | | |
+| A4 | In review | `feature/AUTH-04-proxy` | Checked on local Supabase via env override (`.env.local` points at HOSTED azjc... project: A5+ must do the same). `/login` was 404 (page lands in A8). Proxy sets `x-pathname` so `requireUser()` keeps `next`; always run through `getSafeNext`. C: switch `client.ts`/`server.ts` to `getSupabaseEnv()` and pass `setAll` headers. |
 | A5 | Not started | | |
 | A6 | Not started | | |
 | A7 | Not started | | |
