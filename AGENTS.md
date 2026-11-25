@@ -51,7 +51,8 @@ npm run dev          # start dev server → localhost:3000
 ```
 
 Create `.env.local` at the repo root before running (see **Security & Secrets**).
-No Docker or local database is required — Supabase is hosted.
+Local development requires Docker Desktop for local Supabase — see
+`docs/TEAM-IMPLEMENTATION-PLAN.md` §13 (`npx supabase start`, `npx supabase db reset`).
 
 ---
 
@@ -299,7 +300,7 @@ Items lacking repository evidence — confirm before relying on them:
 - [ ] Test runner and `npm test` script — none configured
 - [ ] CI/CD system and which checks must be green to merge — no workflow files verified
 - [ ] Deployment target — Vercel assumed but unconfirmed
-- [ ] Whether a local Supabase (`supabase start`) setup is used for integration tests
+- [x] Local Supabase (`supabase start`) is used for development and integration tests
 - [ ] i18n library for the planned EN/ES support — `next-intl` vs. alternatives
 - [ ] Chart library for the Progress hero chart — Recharts vs. Visx vs. hand-rolled SVG
 
