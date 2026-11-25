@@ -855,7 +855,7 @@ history.
 
 | Session | Status | Branch / PR | Notes |
 |---|---|---|---|
-| A1 | Not started | | |
+| A1 | In review | `feature/AUTH-05-auth-contracts` | Added own `Auth/Profile` section (S0-B3 absent) and `messages/{en,es}/auth.json` (S0-B4 absent). 11 pre-existing tsc errors (Card, Modal, volume.ts etc.) unrelated. `@/messages/en/auth.json` import in responses.ts needs `resolveJsonModule` (on). |
 | A2 | Not started | | |
 | A3 | In review | `feature/AUTH-03-profile-trigger` | Migration `20260901000000_auth_profile_trigger.sql`. No `seed.sql` exists yet, so nothing to adjust. Tested via docker exec (no local psql). Not applied to hosted Supabase (needs approval). |
 | A4 | Not started | | |
