@@ -1011,7 +1011,12 @@ npm run dev                   # http://localhost:3000
   migrations.
 - Verified in S0-C1 with Supabase CLI 3.4.0 and Docker 29.9: all three migrations apply on
   `db reset` and the catalog seed loads 53 exercises across all 8 patterns. Studio runs at
-  `http://127.0.0.1:54323`. `supabase/seed.sql` arrives in S0-C4.
+  `http://127.0.0.1:54323`.
+- Dev seed (S0-C4): login `demo@gym-ai.local` / `DemoLifter123!` (local only). Dates are relative
+  to the day of `db reset`: a two-week upper/lower plan starts that day, with today's Upper A
+  `active` and two bench sets logged. Three weeks of history precede it, and the middle week is
+  untrained. Re-run `db reset` on another day to move "today". Session rows are provisional
+  until S0-J1 (§5.3).
 - Open Docker Desktop once after installing it. Until its first launch completes, the `docker`
   CLI isn't on `PATH` and `supabase start` fails.
 - `supabase start` prints local-only demo keys. Copy `API_URL` and `ANON_KEY` into `.env.local`.
