@@ -25,7 +25,7 @@ export function translateLoad(
 
   // Barbell → Dumbbell
   if (lowerFromExercise.includes('barbell') && lowerToExercise.includes('dumbbell')) {
-    multiplier = LOAD_TRANSLATION.barbell_to_dumbbell_per_hand;
+    multiplier = 0.5 * LOAD_TRANSLATION.barbellToDumbbellRomFactor;
     rationale = 'Barbell to dumbbell conversion (per hand)';
   }
   // Machine → Free Weight
