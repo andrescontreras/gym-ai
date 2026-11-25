@@ -1,4 +1,10 @@
-import type { EquipmentType, MovementPattern } from '@/types';
+import type {
+  CatalogEquipment,
+  EquipmentAccessory,
+  EquipmentType,
+  InjuryZone,
+  MovementPattern,
+} from '@/types';
 
 /**
  * App-wide domain constants.
@@ -62,7 +68,7 @@ export const EQUIPMENT_TYPES: readonly EquipmentType[] = [
 ] as const;
 
 // Fixtures an exercise needs on top of its main equipment; not selectable in onboarding.
-export const EQUIPMENT_ACCESSORIES = [
+export const EQUIPMENT_ACCESSORIES: readonly EquipmentAccessory[] = [
   'bench',
   'rack',
   'pull_up_bar',
@@ -71,14 +77,14 @@ export const EQUIPMENT_ACCESSORIES = [
   'trap_bar',
 ] as const;
 
-export const EQUIPMENT_ALIASES: Readonly<Record<string, string>> = {
+export const EQUIPMENT_ALIASES: Readonly<Record<string, CatalogEquipment>> = {
   dumbbell: 'dumbbells',
   machine: 'machines',
   cable: 'cables',
   bar: 'pull_up_bar',
 };
 
-export const INJURY_ZONES = [
+export const INJURY_ZONES: readonly InjuryZone[] = [
   'neck',
   'shoulder',
   'elbow',
@@ -91,7 +97,7 @@ export const INJURY_ZONES = [
 
 // Conservative: a pattern is excluded when it plausibly loads the zone, regardless of severity.
 export const INJURY_ZONE_RESTRICTED_PATTERNS: Readonly<
-  Record<(typeof INJURY_ZONES)[number], readonly MovementPattern[]>
+  Record<InjuryZone, readonly MovementPattern[]>
 > = {
   neck: ['push_vertical', 'carry'],
   shoulder: ['push_horizontal', 'push_vertical', 'pull_vertical'],

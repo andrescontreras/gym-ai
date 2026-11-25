@@ -6,11 +6,36 @@ export interface Exercise {
   synergistMuscles?: string[]; // Secondary muscles activated
   movementPattern: 'push_horizontal' | 'push_vertical' | 'pull_horizontal' | 'pull_vertical' | 'squat' | 'hinge' | 'lunge' | 'carry';
   equipment: string[];
-  resistanceProfile?: 'constant' | 'ascending' | 'descending' | 'accommodating'; // Resistance curve
+  resistanceProfile?: ResistanceProfile;
   description?: string;
   videoUrl?: string;
   embedding?: number[]; // pgvector for semantic search
   biomechanicalTags?: string[]; // E.g., 'unilateral', 'compound', 'isolation'
+}
+
+export type ResistanceProfile = 'constant' | 'ascending' | 'descending' | 'accommodating';
+
+// Proposed vocabularies (S0-C3); values live in lib/constants.ts.
+export type EquipmentAccessory = 'bench' | 'rack' | 'pull_up_bar' | 'landmine' | 'box' | 'trap_bar';
+
+export type CatalogEquipment = EquipmentType | EquipmentAccessory;
+
+export type InjuryZone =
+  | 'neck'
+  | 'shoulder'
+  | 'elbow'
+  | 'wrist'
+  | 'lower_back'
+  | 'hip'
+  | 'knee'
+  | 'ankle';
+
+export interface CandidateExerciseFilters {
+  movementPatterns?: MovementPattern[];
+  excludedPatterns?: MovementPattern[];
+  // An exercise matches only if every item it requires is in this list.
+  availableEquipment?: CatalogEquipment[];
+  muscleGroup?: string;
 }
 
 // Session & Workout Types
