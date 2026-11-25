@@ -1,49 +1,42 @@
-import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { NextResponse } from 'next/server'
+import { mapSupabaseAuthError } from '@/lib/auth/errors'
+import { authErrorResponse } from '@/lib/auth/responses'
+import { toAuthUser } from '@/lib/supabase/auth'
+import { createClient } from '@/lib/supabase/server'
+import { getIssueCode, signupRequestSchema } from '@/lib/validation/auth'
+import type { AuthSuccessResponse } from '@/types'
 
 export async function POST(request: Request) {
+  let body: unknown
   try {
-    const body = await request.json();
-    const { email, password, name } = body;
-
-    // Debug logging
-    console.log('Signup attempt:', { email, hasPassword: !!password, hasName: !!name });
-    console.log('Environment check:', {
-      hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-      hasKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      urlPreview: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 30)
-    });
-
-    const supabase = await createClient();
-
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-
-    if (error) {
-      console.error('Supabase signup error:', error);
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
-
-    if (data.user) {
-      // Create user profile
-      const { error: profileError } = await supabase
-        .from('user_profiles')
-        .insert({
-          id: data.user.id,
-          email,
-          name,
-          experience_level: 'beginner',
-        });
-
-      if (profileError) {
-        console.error('Error creating profile:', profileError);
-      }
-    }
-
-    return NextResponse.json({ success: true, user: data.user });
-  } catch (error) {
-    return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+    body = await request.json()
+  } catch {
+    return authErrorResponse('UNKNOWN_ERROR')
   }
+
+  const parsed = signupRequestSchema.safeParse(body)
+  if (!parsed.success) return authErrorResponse(getIssueCode(parsed.error))
+  const { email, password, name } = parsed.data
+
+  const supabase = await createClient()
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { name },
+      emailRedirectTo: `${new URL(request.url).origin}/auth/confirm`,
+    },
+  })
+
+  if (error) {
+    const code = mapSupabaseAuthError(error)
+    console.error('[auth] signup failed:', code)
+    return authErrorResponse(code)
+  }
+  if (!data.user) return authErrorResponse('SERVER_ERROR')
+
+  return NextResponse.json<AuthSuccessResponse>(
+    { success: true, user: toAuthUser(data.user) },
+    { status: 201 }
+  )
 }
