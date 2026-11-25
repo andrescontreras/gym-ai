@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/client';
+import { mapUserProfileRow } from '@/lib/supabase/profile';
 import type { UserProfile } from '@/types';
 
 interface AuthContextType {
@@ -55,7 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .select('*')
       .eq('id', userId)
       .single();
-    setProfile(data);
+    setProfile(data ? mapUserProfileRow(data) : null);
     setLoading(false);
   }
 

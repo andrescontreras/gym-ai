@@ -17,7 +17,7 @@ Gym AI is an intelligent strength training and hypertrophy app that acts as a **
 - **Framework**: Next.js 16 (App Router) with TypeScript
 - **UI**: Tailwind CSS 4 + Shadcn UI (Radix primitives)
 - **Database**: Supabase (PostgreSQL + pgvector for semantic search)
-- **AI**: Vercel AI SDK + Anthropic Claude 3.5 Sonnet
+- **AI**: Vercel AI SDK + Anthropic Claude Sonnet 4.5 / Haiku 4.5 (`lib/ai/config.ts`)
 - **Auth**: Supabase Auth (Phase 1 core feature — see [docs/features/user-authentication.md](docs/features/user-authentication.md))
 - **Package Manager**: npm
 
@@ -128,13 +128,13 @@ npm run lint         # ESLint (fix issues before committing)
 
 ### AI Integration
 
-**Model Selection**:
-- **Claude 3.5 Sonnet** (`claude-3-5-sonnet-20241022`):
+**Model Selection** (IDs are configured in `lib/ai/config.ts`):
+- **Claude Sonnet 4.5** (`claude-sonnet-4-5`):
   - Use for: Routine builder, exercise substitution
   - Why: Complex reasoning, safety-critical decisions, biomechanical analysis
   - Latency: ~2-5 seconds (acceptable for these use cases)
   
-- **Claude 3.5 Haiku** (`claude-3-5-haiku-20241022`):
+- **Claude Haiku 4.5** (`claude-haiku-4-5`):
   - Use for: Voice parsing, predictive load calculations
   - Why: Speed-optimized, simple NLP tasks
   - Latency: <1 second (critical for voice UX)
@@ -359,7 +359,7 @@ NEXT_PUBLIC_APP_URL=               # App URL (localhost:3000 in dev)
 ### Supabase Gotchas
 
 - camelCase in TypeScript types (`muscleGroup`) vs snake_case in database (`muscle_group`)
-- Automatic conversion handled by Supabase client, but be aware when writing raw SQL
+- supabase-js does **not** convert case: map rows through `lib/supabase/<area>.ts` mappers
 - RLS policies not yet enabled — will be required before production
 
 ### AI Integration

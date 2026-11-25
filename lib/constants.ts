@@ -1,10 +1,17 @@
-import type { MovementPattern } from '@/types';
+import type {
+  CatalogEquipment,
+  EquipmentAccessory,
+  EquipmentType,
+  InjuryZone,
+  MovementPattern,
+} from '@/types';
 
 /**
  * App-wide domain constants.
  * Source of truth for training rules referenced throughout the app.
  */
 
+// Routine builder constants (Dev B)
 // Weekly volume caps (sets per muscle group per week) by experience level.
 export const WEEKLY_VOLUME_CAPS = {
   beginner: { min: 10, max: 12 },
@@ -12,6 +19,10 @@ export const WEEKLY_VOLUME_CAPS = {
   advanced: { min: 16, max: 22 },
 } as const;
 
+// Recovery window between training the same muscle group (hours).
+export const RECOVERY_WINDOW_HOURS = { min: 48, max: 72 } as const;
+
+// Progress and tracking constants (Dev A)
 // Reps in Reserve interpretation.
 export const RIR = {
   FAILURE: 0,
@@ -26,9 +37,7 @@ export const LOAD_INCREMENT_KG = {
   lowerBody: 5,
 } as const;
 
-// Recovery window between training the same muscle group (hours).
-export const RECOVERY_WINDOW_HOURS = { min: 48, max: 72 } as const;
-
+// Catalog and substitution constants (Dev C)
 // Load translation multipliers used when substituting exercises.
 export const LOAD_TRANSLATION = {
   barbellToDumbbellRomFactor: 0.85,
@@ -47,3 +56,58 @@ export const MOVEMENT_PATTERNS: readonly MovementPattern[] = [
   'lunge',
   'carry',
 ] as const;
+
+// Catalog vocabularies. Proposed (S0-C3): pending product-owner sign-off, see DOMAIN-RULES.md §8.
+
+export const EQUIPMENT_TYPES: readonly EquipmentType[] = [
+  'full_gym',
+  'dumbbells',
+  'barbell',
+  'kettlebells',
+  'resistance_bands',
+  'bodyweight',
+  'machines',
+  'cables',
+] as const;
+
+// Fixtures an exercise needs on top of its main equipment; not selectable in onboarding.
+export const EQUIPMENT_ACCESSORIES: readonly EquipmentAccessory[] = [
+  'bench',
+  'rack',
+  'pull_up_bar',
+  'landmine',
+  'box',
+  'trap_bar',
+] as const;
+
+export const EQUIPMENT_ALIASES: Readonly<Record<string, CatalogEquipment>> = {
+  dumbbell: 'dumbbells',
+  machine: 'machines',
+  cable: 'cables',
+  bar: 'pull_up_bar',
+};
+
+export const INJURY_ZONES: readonly InjuryZone[] = [
+  'neck',
+  'shoulder',
+  'elbow',
+  'wrist',
+  'lower_back',
+  'hip',
+  'knee',
+  'ankle',
+] as const;
+
+// Conservative: a pattern is excluded when it plausibly loads the zone, regardless of severity.
+export const INJURY_ZONE_RESTRICTED_PATTERNS: Readonly<
+  Record<InjuryZone, readonly MovementPattern[]>
+> = {
+  neck: ['push_vertical', 'carry'],
+  shoulder: ['push_horizontal', 'push_vertical', 'pull_vertical'],
+  elbow: ['push_horizontal', 'push_vertical', 'pull_horizontal', 'pull_vertical'],
+  wrist: ['push_horizontal', 'push_vertical', 'carry'],
+  lower_back: ['squat', 'hinge', 'carry'],
+  hip: ['squat', 'hinge', 'lunge'],
+  knee: ['squat', 'lunge'],
+  ankle: ['squat', 'lunge', 'carry'],
+};

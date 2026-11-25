@@ -294,6 +294,52 @@ Rules:
 - Undo (5 s) is handled inside the panel, and calls `onSubstituted` again with the restored
   exercise.
 
+### 5.3 Plan, shared UI and onboarding contracts (S0-J3)
+
+`WorkoutPlanSchema` validates generated plan content; the server supplies the plan ID, user ID,
+goals and timestamps. Its exported `MicrocycleSchema`, `PlannedSessionSchema` and
+`PlannedExerciseSchema` describe the nested content. Each level has a non-empty explanation:
+`aiRationale` for the plan and `rationale` for every week, session and exercise. Exercise IDs
+must identify existing catalog entries. Array order is the prescribed order, not a row ID.
+`weight: null` means the starting load is unknown, not zero. The schema checks shape and calendar
+consistency, **not** injury, equipment, volume or recovery safety; RB-03/RB-06 must validate
+those rules before persistence or presentation.
+
+Dates are calendar dates (`YYYY-MM-DD`), not timestamps. Weeks start at `startDate` and end
+before the date seven days later; week numbers begin at 1 and dates are consecutive. Session
+dates must fall within their week. `getCurrentMicrocycle(planId, date): Promise<Microcycle | null>`
+will return the matching week, or `null` outside the plan. Authentication and query errors must
+not be treated as a missing week. Its current body throws until RB-02.
+`isOnboardingComplete(profile: UserProfile): boolean` also throws until RB-04; RB-01 must settle
+completion and persistence semantics first. No demo-user exception is implemented here.
+
+**Provisional seed and RB-02 mapping, pending S0-J1 review:**
+
+| Source | Destination |
+|---|---|
+| Plan identity, name, duration, goals, volume profile, rationale, timestamps | `workout_plans` corresponding snake_case columns; `microcycles` contains the complete nested plan content |
+| Each planned session | One `workout_sessions` row: generated `id`, plan's `user_id` and `plan_id`, session `date` and `name`, `status = 'planned'` |
+| Each planned exercise | One `session_exercises` row: generated `id`, new `session_id`, `exercise_id`, `sets`, `reps`, `weight`, `rir`, `rest_seconds`, `completed = false`, `substituted_from = null` |
+
+Use fixed row UUIDs in the local seed. Keep week, session and exercise rationales and the
+prescribed order in `workout_plans.microcycles`; current session tables have no columns for them
+or a stable link back to nested entries. Do not rely on insertion order to recover exercise
+order. The current `session_exercises.weight` is non-null, so an unknown load cannot be
+materialized without an agreed schema change; never substitute zero. S0-J1 must settle ordering,
+prescription versus logged load, nullable unknown load, and a durable association between the
+plan entries and session rows (including access to rationales). The unit of prescribed weight
+also needs agreement with the profile/units contract. RB-02 owns the transactional
+`create_plan_with_sessions` RPC and must reconcile this mapping with S0-J1 before implementing it.
+Until then S0-C4 can seed a two-week plan with known loads and fixed IDs, but consumers cannot
+assume session rows alone preserve order or rationales. The schema permits a short demo plan;
+the recommended hypertrophy duration remains 8–12 weeks.
+
+S5 props live in `types/index.ts`: `BodyMapProps` uses selection mode with selected zone IDs and
+a toggle callback, or heatmap mode with values keyed by zone ID. Zone names remain subject to
+S0-C3 approval; heatmap units and color scale are consumer presentation decisions.
+`VolumeVsCapChartProps` takes `WeeklyVolume`, the experience cap range, and `isDeloadWeek`;
+the bars and caps count sets, not tonnage. Components arrive in RB-05/RB-09.
+
 ---
 
 ## 6. Collaboration rules
@@ -468,6 +514,9 @@ for its feature track.
 - Confirm with the human owner that `ANTHROPIC_API_KEY` is a real key (D14). Never print it.
 - Add local-Supabase example values to `.env.example`. Document or remove the unused
   `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+- **Status (2026-11-25):** `.env.example` points at local Supabase and the publishable key is no
+  longer referenced. Dev C has **no Anthropic key**: a team key from the human owner (or a
+  personal one) is needed before the G0 AI-call check. Everything else proceeds without it.
 
 **S0-C6: Move and type-fix load translation (S)**
 - Move `lib/utils/load-translation.ts` to `lib/training/load-translation.ts` and fix the missing
