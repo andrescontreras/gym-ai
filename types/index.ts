@@ -336,6 +336,8 @@ export interface WorkoutPlan {
   updatedAt: string;
 }
 
+export type CreateWorkoutPlanInput = Omit<WorkoutPlan, 'createdAt' | 'updatedAt'>;
+
 export interface Microcycle {
   weekNumber: number;
   startDate: string;
@@ -549,7 +551,12 @@ export interface Database {
       >;
     };
     Views: { [_ in never]: never };
-    Functions: { [_ in never]: never };
+    Functions: {
+      create_plan_with_sessions: {
+        Args: { p_plan: CreateWorkoutPlanInput };
+        Returns: string;
+      };
+    };
   };
 }
 

@@ -1,5 +1,11 @@
 import { z } from 'zod';
-import type { GeneratedWorkoutPlan, Microcycle, PlannedExercise, PlannedSession } from '@/types';
+import type {
+  GeneratedWorkoutPlan,
+  Goal,
+  Microcycle,
+  PlannedExercise,
+  PlannedSession,
+} from '@/types';
 
 /**
  * Zod schemas for validating AI responses.
@@ -124,6 +130,11 @@ export const WorkoutPlanSchema: z.ZodType<GeneratedWorkoutPlan> = z.strictObject
       }
     });
   });
+});
+
+export const GoalSchema: z.ZodType<Goal> = z.strictObject({
+  type: z.enum(['hypertrophy', 'fat_loss', 'strength', 'endurance', 'conditioning']),
+  priority: z.enum(['primary', 'secondary']),
 });
 
 // Progress tracking and voice parsing (Dev A)
