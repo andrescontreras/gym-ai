@@ -430,7 +430,9 @@ type UserProfileRow = {
   injuries: Injury[] | null;
   preferences: UserProfile['preferences'] | null;
   onboarding: OnboardingData | null;
+  units: UserProfile['units'];
   created_at: string;
+  updated_at: string;
 };
 
 type WorkoutPlanRow = {
