@@ -855,7 +855,7 @@ history.
 
 | Session | Status | Branch / PR | Notes |
 |---|---|---|---|
-| A1 | Not started | | |
+| A1 | Merged | `feature/AUTH-05-auth-contracts` | Added own `Auth/Profile` section (S0-B3 absent) and `messages/{en,es}/auth.json` (S0-B4 absent). 11 pre-existing tsc errors (Card, Modal, volume.ts etc.) unrelated. `@/messages/en/auth.json` import in responses.ts needs `resolveJsonModule` (on). |
 | A2 | In review | `feature/AUTH-01-auth-deps-config` | Config file is `supabase/config.jsonc`, not `.toml` (A13 must fix plan/spec refs). Two commits = two PRs (deps, then config). Hosted Supabase: needs same site_url, redirect URL, min password 8, recovery/confirmation templates (human approval). |
 | A3 | Not started | | |
 | A4 | Not started | | |
