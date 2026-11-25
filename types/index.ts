@@ -1,4 +1,26 @@
+import type { ZodType } from 'zod';
+
 // Shared types
+export type AIGenerationFallbackReason =
+  | 'missing_api_key'
+  | 'provider_error'
+  | 'timeout'
+  | 'invalid_output';
+
+export type AIGenerationResult<T> =
+  | { status: 'generated'; object: T }
+  | { status: 'fallback'; object: T; reason: AIGenerationFallbackReason }
+  | { status: 'fallback_unavailable'; reason: AIGenerationFallbackReason };
+
+export interface GenerateValidatedObjectOptions<T> {
+  modelId: string;
+  schema: ZodType<T>;
+  prompt: string;
+  instructions: string;
+  clarifiedPrompt: string;
+  timeoutMs: number;
+  fallback?: () => T | Promise<T>;
+}
 
 // Catalog types (Dev C)
 export interface Exercise {
