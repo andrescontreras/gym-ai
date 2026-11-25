@@ -80,7 +80,7 @@
 **Files Implemented:**
 - `lib/utils/formatters.ts` - `formatWeight()`, `formatDate()`, `formatRelativeTime()`
 - `lib/utils/volume.ts` - `calculateSetVolume()`, `calculateWeeklyVolume()`, `calculateTotalSets()`
-- `lib/utils/load-translation.ts` - `translateLoad()` for exercise substitutions
+- `lib/training/load-translation.ts` - `translateLoad()` for exercise substitutions
 - `lib/utils/cn.ts` - Tailwind class merging (already existed)
 
 **All teams can use these utilities immediately!**
