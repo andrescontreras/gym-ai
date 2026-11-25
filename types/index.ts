@@ -262,8 +262,49 @@ export interface WorkoutPlan {
 
 export interface Microcycle {
   weekNumber: number;
-  focus: string; // E.g., 'Accumulation', 'Intensification', 'Deload'
-  sessions: WorkoutSession[];
+  startDate: string;
+  focus: 'accumulation' | 'intensification' | 'deload';
+  rationale: string;
+  sessions: PlannedSession[];
+}
+
+export interface PlannedSession {
+  date: string;
+  name: string;
+  rationale: string;
+  exercises: PlannedExercise[];
+}
+
+export interface PlannedExercise {
+  exerciseId: string;
+  sets: number;
+  reps: number;
+  weight: number | null;
+  rir: number;
+  restSeconds: number;
+  rationale: string;
+}
+
+export type GeneratedWorkoutPlan = Pick<
+  WorkoutPlan,
+  'name' | 'durationWeeks' | 'microcycles' | 'volumeProfile' | 'aiRationale'
+>;
+
+export type BodyMapProps =
+  | {
+      mode: 'selection';
+      selectedZones: string[];
+      onToggleZone: (zone: string) => void;
+    }
+  | {
+      mode: 'heatmap';
+      valuesByZone: Record<string, number>;
+    };
+
+export interface VolumeVsCapChartProps {
+  weeklyVolume: WeeklyVolume;
+  capsForExperience: { min: number; max: number };
+  isDeloadWeek: boolean;
 }
 
 export interface VolumeProfile {
